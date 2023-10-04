@@ -1,0 +1,251 @@
+﻿<Page
+    x:Class="PipeTech.Downloader.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:PipeTech.Downloader.Models"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core"
+    xmlns:helpers="using:PipeTech.Downloader.Helpers"
+    xmlns:behaviors="using:PipeTech.Downloader.Behaviors"
+    xmlns:vm="using:PipeTech.Downloader.ViewModels"
+    mc:Ignorable="d">
+    <Page.Resources>
+
+        <helpers:StringUriToFilenameConverter x:Key="StringUriToFilenameConverter"/>
+        <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
+        <helpers:NumberBytesToStorageStringConverter x:Key="NumberBytesToStorageStringConverter"/>
+
+        <helpers:BindingProxy x:Key="Proxy" Data="{x:Bind ViewModel, Mode=OneWay}"/>
+
+        <DataTemplate x:Key="FolderTemplate" x:DataType="models:DownloadInspectionHandler">
+            <TreeViewItem AutomationProperties.Name="{x:Bind Inspection.Name, Mode=OneWay}"
+                          ItemsSource="{x:Bind Inspection.Files, Mode=OneWay}" 
+                          IsExpanded="True">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="10" Source="../Assets/folder.png"/>
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{x:Bind Inspection.Name, Mode=OneWay}" VerticalAlignment="Center" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <Button VerticalAlignment="Center"
+                            Margin="15,0,0,0"
+                            FontSize="{StaticResource XSmallFontSize}"
+                            Command="{x:Bind ReloadCommand}">
+                            <Interactivity:Interaction.Behaviors>
+                                <behaviors:VisibilityUIElementBehavior State="{x:Bind Inspection.State, Mode=OneWay}" />
+                            </Interactivity:Interaction.Behaviors>
+                            <Button.Content>
+                                <TextBlock Text="{x:Bind Inspection.State, Mode=OneWay, Converter={StaticResource EnumToStringConverter}}"/>
+                            </Button.Content>
+                        </Button>
+
+                        <HyperlinkButton Content="View Details..." 
+                                         Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowInspectionDetailsCommand}"
+                                         CommandParameter="{x:Bind}">
+                            <Interactivity:Interaction.Behaviors>
+                                <behaviors:VisibilityUIElementBehavior
+                                    State="{x:Bind Inspection.State, Mode=OneWay}" 
+                                    OnlyVisibleOnError="True"/>
+                            </Interactivity:Interaction.Behaviors>
+                            <HyperlinkButton.Resources>
+                                <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver"
+                                                                    ResourceKey="SubtleFillColorTransparentBrush" />
+                            </HyperlinkButton.Resources>
+                        </HyperlinkButton>
+
+                        <ToggleSwitch Margin="{StaticResource MediumLeftMargin}"
+                                      VerticalAlignment="Center"
+                                      OnContent="Skip" 
+                                      OffContent="Overwrite" 
+                                      IsOn="{x:Bind Skip, Mode=TwoWay}">
+                            <Interactivity:Interaction.Behaviors>
+                                <behaviors:VisibilityUIElementBehavior
+                                    VisibleByExistence="True"
+                                    DataFolder="{Binding Source={StaticResource Proxy}, Path=Data.DataFolder, Mode=OneWay}"
+                                    DownloadHandler="{x:Bind Mode=OneWay}"/>
+                            </Interactivity:Interaction.Behaviors>
+                        </ToggleSwitch>
+                    </StackPanel>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FileTemplate" x:DataType="models:File">
+            <TreeViewItem AutomationProperties.Name="{x:Bind Name, Mode=OneWay}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="10" Source="../Assets/file.png"/>
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{x:Bind Name, Mode=OneWay, Converter={StaticResource StringUriToFilenameConverter}}"/>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FileTemplateForString" x:DataType="x:String">
+            <TreeViewItem AutomationProperties.Name="{x:Bind}">
+                <StackPanel Orientation="Horizontal">
+                    <Image Width="10" Source="../Assets/file.png"/>
+                    <TextBlock Margin="0,0,10,0"/>
+                    <TextBlock Text="{x:Bind}"/>
+                </StackPanel>
+            </TreeViewItem>
+        </DataTemplate>
+
+        <models:DownloadTemplateSelector x:Key="DownloadTemplateSelector"
+                                         FileTemplate="{StaticResource FileTemplate}"
+                                         FolderTemplate="{StaticResource FolderTemplate}"
+                                         FileTemplateString="{StaticResource FileTemplateForString}"/>
+    </Page.Resources>
+    <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            x:Uid="Main_Title"
+            Style="{StaticResource BodyTextStyle}" />
+
+        <Button Content="x"
+                IsTabStop="False"
+                ToolTipService.ToolTip="Cancel download"
+                Grid.Row="0"
+                HorizontalAlignment="Right"
+                Command="{x:Bind ViewModel.CloseCommand}" >
+            <Button.Resources>
+                <StaticResource x:Key="ButtonBorderBrush" ResourceKey="ControlFillColorTransparentBrush" />
+                <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+                <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="ControlFillColorTransparentBrush" />
+                <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="ControlFillColorTransparentBrush" />
+                <StaticResource x:Key="ButtonBackground" ResourceKey="ControlFillColorTransparentBrush" />
+                <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="ControlFillColorTransparentBrush" />
+            </Button.Resources>
+        </Button>
+
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock
+                    VerticalAlignment="Center"
+                    Text="{x:Bind ViewModel.DownloadName, Mode=OneWay}"                    
+                    Style="{StaticResource PageTitleStyle}" />
+                    <ContentPresenter>
+                        <Interactivity:Interaction.Behaviors>
+                            <behaviors:ContentPresenterTemplateManifestBehavior 
+                                State="{x:Bind ViewModel.State, Mode=OneWay}">
+
+                                <behaviors:ContentPresenterTemplateManifestBehavior.CancelledTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="15,0,0,0" 
+                                                Content="Paused"
+                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.ManifestLoadCommand}" />
+                                    </DataTemplate>
+                                </behaviors:ContentPresenterTemplateManifestBehavior.CancelledTemplate>
+
+                                <behaviors:ContentPresenterTemplateManifestBehavior.LoadingTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="15,0,0,0" 
+                                                Content="Loading"
+                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.ManifestLoadCommand}" />
+                                    </DataTemplate>
+                                </behaviors:ContentPresenterTemplateManifestBehavior.LoadingTemplate>
+
+                                <behaviors:ContentPresenterTemplateManifestBehavior.CompletedTemplate>
+                                    <DataTemplate>
+                                        <Button Margin="15,0,0,0" 
+                                                Content="Complete"
+                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.ManifestLoadCommand}" />
+                                    </DataTemplate>
+                                </behaviors:ContentPresenterTemplateManifestBehavior.CompletedTemplate>
+
+                                <behaviors:ContentPresenterTemplateManifestBehavior.ErroredTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Button Margin="15,0,0,0" 
+                                                    Content="Error"
+                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.ManifestLoadCommand}" />
+                                            <HyperlinkButton Content="View Details..." 
+                                                             Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowDetailsCommand}">
+                                                <HyperlinkButton.Resources>
+                                                    <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver"
+                                                                    ResourceKey="SubtleFillColorTransparentBrush" />
+                                                </HyperlinkButton.Resources>
+                                            </HyperlinkButton>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </behaviors:ContentPresenterTemplateManifestBehavior.ErroredTemplate>
+
+                            </behaviors:ContentPresenterTemplateManifestBehavior>
+                        </Interactivity:Interaction.Behaviors>
+                    </ContentPresenter>
+
+                </StackPanel>
+                <StackPanel Grid.Column="1" Margin="{StaticResource LargeLeftRightMargin}">
+                    <TextBlock Text="Inspections" />
+                    <TextBlock Style="{StaticResource DownloadDataStyle}"
+                               Text="{x:Bind ViewModel.InspectionCountString, Mode=OneWay}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2">
+                    <TextBlock
+                        Text="Size (approx.)" />
+                    <TextBlock
+                        Style="{StaticResource DownloadDataStyle}"
+                        Text="{x:Bind ViewModel.TotalSize, Mode=OneWay, Converter={StaticResource NumberBytesToStorageStringConverter}}" />
+                </StackPanel>
+            </Grid>
+
+            <ScrollViewer Grid.Row="1">
+                <TreeView 
+                    ItemsSource="{x:Bind ViewModel.Inspections, Mode=OneWay}"
+                    ItemTemplateSelector="{StaticResource DownloadTemplateSelector}"/>
+            </ScrollViewer>
+
+            <Grid Grid.Row="2"
+                  Margin="{StaticResource XSmallTopMargin}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0"
+                         Text="{x:Bind ViewModel.DataFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="{StaticResource XSmallLeftMargin}"
+                         VerticalAlignment="Center"/>
+                <Button Grid.Column="1"     
+                        Command="{x:Bind ViewModel.BrowseFolderCommand}"
+                        Margin="{StaticResource XSmallLeftMargin}"          
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        Content="Browse"/>
+                <CheckBox Grid.Column="2"
+                          Margin="{StaticResource XSmallLeftMargin}"
+                          VerticalAlignment="Center"
+                          IsChecked="{x:Bind ViewModel.UseDefault, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          Content="Use as default path"/>
+
+            </Grid>
+
+            <Button Grid.Row="3"     
+                    Command="{x:Bind ViewModel.DownloadCommand}"
+                    Margin="{StaticResource SmallTopBottomMargin}"           
+                    HorizontalAlignment="Right"
+                    Content="Download"/>
+        </Grid>
+
+    </Grid>
+</Page>

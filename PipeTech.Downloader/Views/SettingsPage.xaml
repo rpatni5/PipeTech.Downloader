@@ -1,0 +1,134 @@
+﻿<Page
+    x:Class="PipeTech.Downloader.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:helpers="using:PipeTech.Downloader.Helpers"
+    xmlns:xaml="using:Microsoft.UI.Xaml"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <helpers:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+    </Page.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,0,-15,0">
+        <Grid Margin="0,0,15,15">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock
+            Grid.Row="0"
+            x:Uid="Settings_Title"
+            Style="{StaticResource PageTitleStyle}" />
+            <StackPanel
+            Grid.Row="1" 
+            x:Name="ContentArea">
+
+                <TextBlock x:Uid="Settings_DefaultDownloadPath" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <Grid Margin="{StaticResource SmallTopBottomMargin}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0"
+                         IsReadOnly="True"
+                         x:Uid="Settings_SelectDefault"
+                         Text="{x:Bind ViewModel.DataFolder, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="{StaticResource XSmallLeftMargin}"
+                         VerticalAlignment="Center"/>
+                    <Button Grid.Column="1"     
+                        Command="{x:Bind ViewModel.BrowseFolderCommand}"
+                        Margin="{StaticResource XSmallLeftMargin}"          
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Center"
+                        x:Uid="Settings_Browse"/>
+                </Grid>
+
+                <TextBlock x:Uid="Settings_Personalization" Style="{ThemeResource SubtitleTextBlockStyle}" />
+                <StackPanel Margin="{StaticResource SmallTopBottomMargin}">
+                    <TextBlock x:Uid="Settings_Theme" />
+
+                    <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                        <RadioButton
+                        x:Uid="Settings_Theme_Light"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Light, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Light</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                        <RadioButton
+                        x:Uid="Settings_Theme_Dark"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Dark, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Dark</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                        <RadioButton
+                        x:Uid="Settings_Theme_Default"
+                        Command="{x:Bind ViewModel.SwitchThemeCommand}"
+                        IsChecked="{x:Bind ViewModel.ElementTheme, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Default, Mode=OneWay}"
+                        FontSize="15"
+                        GroupName="AppTheme">
+                            <RadioButton.CommandParameter>
+                                <xaml:ElementTheme>Default</xaml:ElementTheme>
+                            </RadioButton.CommandParameter>
+                        </RadioButton>
+                    </StackPanel>
+                </StackPanel>
+
+                <TextBlock x:Uid="Settings_Support" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                    <HyperlinkButton x:Uid="Settings_Support_CallLink" 
+                                     Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+                    <HyperlinkButton x:Uid="Settings_Support_EmailLink" 
+                                     Command="{x:Bind ViewModel.EmailCommand}"
+                                     Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+                    <HyperlinkButton x:Uid="Settings_Support_RemoteLink" 
+                                     Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+                    <HyperlinkButton Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" 
+                                     Content="{x:Bind ViewModel.DiagnosticLogFolderContent}"
+                                     Command="{x:Bind ViewModel.LogFolderCommand}"/>
+                </StackPanel>
+
+                <TextBlock x:Uid="Settings_About" Style="{ThemeResource SubtitleTextBlockStyle}" />
+
+                <Grid Margin="{StaticResource XSmallTopMargin}"
+                        HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Margin="{StaticResource XSmallTopMargin}">
+                        <TextBlock Text="{x:Bind ViewModel.VersionDescription, Mode=OneWay}" 
+                           Style="{ThemeResource BodyTextBlockStyle}" />
+
+                        <TextBlock
+                            x:Uid="Settings_AboutDescription"
+                            Margin="{StaticResource XSmallTopMargin}"
+                            Style="{ThemeResource BodyTextBlockStyle}" />
+                        <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink" Margin="{StaticResource SettingsPageHyperlinkButtonMargin}" />
+
+                    </StackPanel>
+
+                    <Button HorizontalAlignment="Right" 
+                        VerticalAlignment="Bottom"
+                        Grid.Column="1"
+                        Margin="{StaticResource XSmallTopMargin}"
+                        Content="Close"
+                        Command="{x:Bind ViewModel.CloseCommand}"/>
+                </Grid>
+
+            </StackPanel>
+        </Grid>
+    </ScrollViewer>
+</Page>

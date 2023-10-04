@@ -1,0 +1,548 @@
+﻿<Page
+    x:Class="PipeTech.Downloader.Views.DownloadsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:models="using:PipeTech.Downloader.Models"
+    xmlns:helpers="using:PipeTech.Downloader.Helpers"
+    xmlns:behaviors="using:PipeTech.Downloader.Behaviors"
+    xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
+    xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
+    mc:Ignorable="d">
+    <Page.Resources>
+
+        <helpers:NumberToPercentageStringConverter x:Key="NumberToPercentageStringConverter" />
+        <helpers:NumberBytesToStorageStringConverter x:Key="NumberBytesToStorageStringConverter" />
+        <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
+
+        <helpers:BindingProxy x:Key="Proxy" Data="{x:Bind ViewModel, Mode=OneWay}"/>
+
+        <DataTemplate x:Key="ButtonComplete">
+            <TextBlock  Text="Complete" />
+        </DataTemplate>
+        <DataTemplate x:Key="ButtonPause">
+            <TextBlock  Text="Processing" />
+        </DataTemplate>
+        <DataTemplate x:Key="ButtonRestart">
+            <TextBlock  Text="Restart" />
+        </DataTemplate>
+        <DataTemplate x:Key="ButtonError">
+            <TextBlock  Text="Error" />
+        </DataTemplate>
+
+        <DataTemplate x:DataType="models:Project" x:Key="ProjectDetails">
+            <Grid RequestedTheme="{Binding Source={StaticResource Proxy}, Path=Data.RequestedTheme, Mode=OneWay}">
+                <controls:DataGrid ItemsSource="{x:Bind Inspections, Mode=OneWay}"
+                                   RequestedTheme="{Binding Source={StaticResource Proxy}, Path=Data.RequestedTheme, Mode=OneWay}"
+                                   IsReadOnly="True"
+                                   RowDetailsVisibilityMode="Collapsed"
+                                   AutoGenerateColumns="False">
+                    <controls:DataGrid.Resources>
+                        <!--<SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" 
+                                                     Color="Transparent" />-->
+                    </controls:DataGrid.Resources>
+                    <controls:DataGrid.Columns>
+                        <controls:DataGridTextColumn Binding="{Binding Inspection.Name, Mode=OneWay}"
+                                                                 Header="Inspection" />
+                        <controls:DataGridTextColumn Binding="{Binding Inspection.TotalSize, Mode=OneWay, Converter={StaticResource NumberBytesToStorageStringConverter}}"
+                                                                 Header="Size" />
+                        <controls:DataGridTextColumn Binding="{Binding Inspection.Progress, Mode=OneWay, Converter={StaticResource NumberToPercentageStringConverter}}"
+                                                                 Header="Progress" />
+                        <controls:DataGridTemplateColumn Header="Actions">
+                            <controls:DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate x:DataType="models:DownloadInspectionHandler">
+                                    <ContentPresenter>
+                                        <Interactivity:Interaction.Behaviors>
+                                            <behaviors:ContentPresenterTemplateBehavior
+                                                State="{x:Bind Inspection.State, Mode=OneWay}">
+                                                <behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                                    <DataTemplate x:DataType="models:DownloadInspectionHandler">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Button
+                                                                Content="Processing"
+                                                                helpers:AncestorSource.AncestorType="models:Project"
+                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
+                                                                CommandParameter="{Binding}" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                                <behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                                    <DataTemplate x:DataType="models:DownloadInspectionHandler">
+                                                        <Button
+                                                            helpers:AncestorSource.AncestorType="models:Project"
+                                                            Content="Restart"
+                                                            Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                            CommandParameter="{Binding}" />
+                                                    </DataTemplate>
+                                                </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                                <behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                                    <DataTemplate x:DataType="models:DownloadInspectionHandler">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Button 
+                                                                helpers:AncestorSource.AncestorType="models:Project"
+                                                                Content="Error"
+                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                                CommandParameter="{Binding}" />
+                                                            <HyperlinkButton Content="View Details..." 
+                                                                             Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowDetailsCommand}"
+                                                                             CommandParameter="{x:Bind Inspection}">
+                                                                <HyperlinkButton.Resources>
+                                                                    <StaticResource x:Key="HyperlinkButtonBackgroundPointerOver"
+                                                                                    ResourceKey="SubtleFillColorTransparentBrush" />
+                                                                </HyperlinkButton.Resources>
+                                                            </HyperlinkButton>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                                <behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                                    <DataTemplate x:DataType="models:DownloadInspectionHandler">
+                                                        <Button
+                                                            Content="Complete"
+                                                                helpers:AncestorSource.AncestorType="models:Project"
+                                                            Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                            CommandParameter="{Binding}" />
+                                                    </DataTemplate>
+                                                </behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                            </behaviors:ContentPresenterTemplateBehavior>
+                                        </Interactivity:Interaction.Behaviors>
+                                    </ContentPresenter>
+                                </DataTemplate>
+                            </controls:DataGridTemplateColumn.CellTemplate>
+                        </controls:DataGridTemplateColumn>
+                    </controls:DataGrid.Columns>
+                </controls:DataGrid>
+            </Grid>
+        </DataTemplate>
+
+        <Style x:Key="DownloadStatusText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="#9A000000" />
+        </Style>
+    </Page.Resources>
+    <Grid x:Name="ContentArea">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+            Grid.Row="0"
+            x:Uid="Downloads_Title"
+            Style="{StaticResource PageTitleStyle}" />
+        <!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto">-->
+        <controls:DataGrid x:Name="grid" Grid.Row="1"
+                               IsReadOnly="True"
+                               SelectionMode="Single"
+                               AutoGenerateColumns="False"
+                               RowDetailsVisibilityMode="{x:Bind ViewModel.VisibilityMode, Mode=TwoWay}"
+                               GridLinesVisibility="Horizontal"
+                               Padding="0,0,15,15"
+                           Visibility="Collapsed"
+                               ItemsSource="{x:Bind ViewModel.SourceView, Mode=OneWay}"
+                               RowDetailsTemplate="{StaticResource ProjectDetails}">
+            <controls:DataGrid.Resources>
+                <Style TargetType="ScrollViewer">
+                    <Setter Property="HorizontalScrollMode" Value="Auto" />
+                    <Setter Property="VerticalScrollMode" Value="Auto" />
+                    <Setter Property="IsHorizontalRailEnabled" Value="True" />
+                    <Setter Property="IsVerticalRailEnabled" Value="True" />
+                    <Setter Property="IsTabStop" Value="False" />
+                    <Setter Property="ZoomMode" Value="Disabled" />
+                    <Setter Property="HorizontalContentAlignment" Value="Left" />
+                    <Setter Property="VerticalContentAlignment" Value="Top" />
+                    <Setter Property="VerticalScrollBarVisibility" Value="Visible" />
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="BorderThickness" Value="0" />
+                    <Setter Property="BorderBrush" Value="Transparent" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ScrollViewer">
+                                <Border x:Name="Root" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup x:Name="ScrollingIndicatorStates">
+
+                                            <VisualStateGroup.Transitions>
+                                                <VisualTransition From="MouseIndicator" To="NoIndicator">
+
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualTransition>
+                                                <VisualTransition From="MouseIndicatorFull" To="NoIndicator">
+
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualTransition>
+                                                <VisualTransition From="MouseIndicatorFull" To="MouseIndicator">
+
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="{ThemeResource ScrollViewerSeparatorContractDelay}">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualTransition>
+                                                <VisualTransition From="TouchIndicator" To="NoIndicator">
+
+                                                    <Storyboard>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.5">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.5">
+                                                                <DiscreteObjectKeyFrame.Value>
+                                                                    <ScrollingIndicatorMode>None</ScrollingIndicatorMode>
+                                                                </DiscreteObjectKeyFrame.Value>
+                                                            </DiscreteObjectKeyFrame>
+                                                        </ObjectAnimationUsingKeyFrames>
+                                                    </Storyboard>
+                                                </VisualTransition>
+                                            </VisualStateGroup.Transitions>
+                                            <VisualState x:Name="NoIndicator" />
+                                            <VisualState x:Name="TouchIndicator">
+
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>TouchIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>TouchIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="MouseIndicator">
+
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="MouseIndicatorFull">
+
+                                                <Storyboard>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="VerticalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                    <ObjectAnimationUsingKeyFrames Storyboard.TargetName="HorizontalScrollBar" Storyboard.TargetProperty="IndicatorMode">
+                                                        <DiscreteObjectKeyFrame KeyTime="0">
+                                                            <DiscreteObjectKeyFrame.Value>
+                                                                <ScrollingIndicatorMode>MouseIndicator</ScrollingIndicatorMode>
+                                                            </DiscreteObjectKeyFrame.Value>
+                                                        </DiscreteObjectKeyFrame>
+                                                    </ObjectAnimationUsingKeyFrames>
+                                                </Storyboard>
+                                            </VisualState>
+
+                                        </VisualStateGroup>
+                                        <VisualStateGroup x:Name="ScrollBarSeparatorStates">
+
+                                            <VisualStateGroup.Transitions>
+                                                <VisualTransition From="ScrollBarSeparatorExpanded" To="ScrollBarSeparatorCollapsed">
+
+                                                    <Storyboard>
+                                                        <DoubleAnimation Duration="{ThemeResource ScrollViewerSeparatorContractDuration}"
+                          BeginTime="{ThemeResource ScrollViewerSeparatorContractBeginTime}"
+                          Storyboard.TargetName="ScrollBarSeparator"
+                          Storyboard.TargetProperty="Opacity"
+                          To="0" />
+                                                    </Storyboard>
+                                                </VisualTransition>
+                                            </VisualStateGroup.Transitions>
+                                            <VisualState x:Name="ScrollBarSeparatorCollapsed" />
+                                            <VisualState x:Name="ScrollBarSeparatorExpanded">
+
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="{ThemeResource ScrollViewerSeparatorExpandDuration}"
+                      BeginTime="{ThemeResource ScrollViewerSeparatorExpandBeginTime}"
+                      Storyboard.TargetName="ScrollBarSeparator"
+                      Storyboard.TargetProperty="Opacity"
+                      To="1" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="ScrollBarSeparatorExpandedWithoutAnimation">
+
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="0"
+                        BeginTime="{ThemeResource ScrollViewerSeparatorExpandBeginTime}"
+                        Storyboard.TargetName="ScrollBarSeparator"
+                        Storyboard.TargetProperty="Opacity"
+                        To="1" />
+                                                </Storyboard>
+                                            </VisualState>
+                                            <VisualState x:Name="ScrollBarSeparatorCollapsedWithoutAnimation">
+
+                                                <Storyboard>
+                                                    <DoubleAnimation Duration="0"
+                        BeginTime="{ThemeResource ScrollViewerSeparatorContractBeginTime}"
+                        Storyboard.TargetName="ScrollBarSeparator"
+                        Storyboard.TargetProperty="Opacity"
+                        To="0" />
+                                                </Storyboard>
+                                            </VisualState>
+
+                                        </VisualStateGroup>
+
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Grid Background="{TemplateBinding Background}"
+                                          Margin="150">
+
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*" />
+                                            <RowDefinition Height="Auto" />
+                                        </Grid.RowDefinitions>
+                                        <ScrollContentPresenter x:Name="ScrollContentPresenter"
+                                                                Grid.RowSpan="2"
+                                                                Grid.ColumnSpan="2"
+                                                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                                Margin="{TemplateBinding Padding}" />
+                                        <Grid Grid.RowSpan="2"
+                                              Grid.ColumnSpan="2" />
+                                        <Grid Grid.Column="1" 
+                                              Margin="150"
+                                              Visibility="{TemplateBinding ComputedVerticalScrollBarVisibility}" 
+                                              Padding="{ThemeResource ScrollViewerScrollBarMargin}">
+                                            <ScrollBar x:Name="VerticalScrollBar" 
+                                                       IsTabStop="False" 
+                                                       Maximum="{TemplateBinding ScrollableHeight}" 
+                                                       Orientation="Vertical" 
+                                                       Value="{TemplateBinding VerticalOffset}" 
+                                                       ViewportSize="{TemplateBinding ViewportHeight}" 
+                                                       HorizontalAlignment="Right" />
+                                        </Grid>
+                                        <Grid Grid.Row="1" 
+                                              Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" 
+                                              Padding="{ThemeResource ScrollViewerScrollBarMargin}">
+                                            <ScrollBar x:Name="HorizontalScrollBar" IsTabStop="False" Maximum="{TemplateBinding ScrollableWidth}" Orientation="Horizontal" Value="{TemplateBinding HorizontalOffset}" ViewportSize="{TemplateBinding ViewportWidth}" />
+                                        </Grid>
+                                        <Border x:Name="ScrollBarSeparator"
+                                        Grid.Row="1"
+                                        Grid.Column="1"
+                                        Opacity="0"
+                                        Background="{ThemeResource ScrollViewerScrollBarSeparatorBackground}" />
+
+                                    </Grid>
+                                </Border>
+
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <StaticResource x:Key="DataGridRowHoveredBackgroundColor" ResourceKey="SystemListLowColor"/>
+                <StaticResource x:Key="DataGridRowSelectedBackgroundColor" ResourceKey="SolidBackgroundFillColorTransparent"/>
+                <StaticResource x:Key="DataGridRowSelectedHoveredBackgroundColor" ResourceKey="SolidBackgroundFillColorTransparent"/>
+                <StaticResource x:Key="DataGridRowSelectedHoveredUnfocusedBackgroundColor" ResourceKey="SolidBackgroundFillColorTransparent"/>
+                <StaticResource x:Key="DataGridRowSelectedUnfocusedBackgroundColor" ResourceKey="SolidBackgroundFillColorTransparent"/>
+                <SolidColorBrush x:Key="DataGridColumnHeaderBackgroundColor" Color="Transparent" />
+                <StaticResource x:Key="DataGridCellFocusVisualPrimaryBrush" ResourceKey="SystemControlTransparentBrush"/>
+                <StaticResource x:Key="DataGridCellFocusVisualSecondaryBrush" ResourceKey="SystemControlTransparentBrush"/>
+            </controls:DataGrid.Resources>
+            <controls:DataGrid.Columns>
+                <controls:DataGridTemplateColumn Header="" >
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:Project">
+                            <controls:Expander Header="" 
+                                                   IsExpanded="{x:Bind Expanded, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+                <controls:DataGridTextColumn Binding="{Binding Name, Mode=OneWay}" 
+                                                 Header="Project"/>
+                <controls:DataGridTextColumn Binding="{Binding DownloadPath, Mode=OneWay}"                                                  
+                                                 Header="Download Path" />
+                <controls:DataGridTextColumn Binding="{Binding TotalSize, Mode=OneWay, Converter={StaticResource NumberBytesToStorageStringConverter}}" 
+                                                 Header="Size" />
+                <controls:DataGridTextColumn Binding="{Binding Progress, Mode=OneWay, Converter={StaticResource NumberToPercentageStringConverter}}" 
+                                                 Header="Progress" />
+                <controls:DataGridTemplateColumn Header="Actions">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:Project">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Margin="{StaticResource XXSmallLeftRightMargin}"
+                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.OpenFolderCommand}"
+                                        CommandParameter="{x:Bind}">
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE838;" />
+                                </Button>
+                                <Button Margin="{StaticResource XXSmallLeftRightMargin}"
+                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RemoveProjectCommand}"
+                                        CommandParameter="{x:Bind}">
+                                    <FontIcon FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE74D;"/>
+                                </Button>
+                                <ContentPresenter Margin="{StaticResource XXSmallLeftRightMargin}">
+                                    <Interactivity:Interaction.Behaviors>
+                                        <behaviors:ContentPresenterTemplateBehavior
+                                                State="{x:Bind State, Mode=OneWay}">
+                                            <behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                                <DataTemplate x:DataType="models:Project">
+                                                    <Button 
+                                                        Content="Processing"
+                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
+                                                        CommandParameter="{x:Bind}"/>
+                                                </DataTemplate>
+                                            </behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                            <behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                                <DataTemplate x:DataType="models:Project">
+                                                    <Button 
+                                                        Content="Restart"
+                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                        CommandParameter="{x:Bind}"/>
+                                                </DataTemplate>
+                                            </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                            <behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                                <DataTemplate x:DataType="models:Project">
+                                                    <Button 
+                                                        Content="Error"
+                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                        CommandParameter="{x:Bind}"/>
+                                                </DataTemplate>
+                                            </behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                            <behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                                <DataTemplate x:DataType="models:Project">
+                                                    <Button 
+                                                        Content="Complete"
+                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                        CommandParameter="{x:Bind}"/>
+                                                </DataTemplate>
+                                            </behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                        </behaviors:ContentPresenterTemplateBehavior>
+                                    </Interactivity:Interaction.Behaviors>
+                                </ContentPresenter>
+                                <!--<Button Margin="{StaticResource XXSmallLeftRightMargin}"
+                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                        CommandParameter="{x:Bind}">
+                                    <Interactivity:Interaction.Behaviors>
+                                        <behaviors:ButtonContentTemplateBehavior 
+                                                State="{x:Bind State, Mode=OneWay}"
+                                                PauseTemplate="{StaticResource ButtonPause}"
+                                                RestartTemplate="{StaticResource ButtonRestart}"
+                                                CompletedTemplate="{StaticResource ButtonComplete}"
+                                                ErroredTemplate="{StaticResource ButtonError}"/>
+                                    </Interactivity:Interaction.Behaviors>
+                                </Button>-->
+                            </StackPanel>
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+            </controls:DataGrid.Columns>
+        </controls:DataGrid>
+        <!--</ScrollViewer>-->
+        <TreeView  x:Name="itemListView"
+          Grid.Row="1"
+                   Margin="0"
+                   Padding="0"
+          ItemsSource="{x:Bind ViewModel.SourceView, Mode=OneWay}" >
+            <TreeView.ItemTemplate>
+                <DataTemplate x:DataType="models:Project">
+                    <StackPanel 
+                    x:Name="currentProjectPanel"
+                    Background="White" 
+                    CornerRadius="7" 
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Top" 
+                    Margin="-40,0,0,0" 
+                    BorderBrush="#EAEAEA" 
+                    BorderThickness="1"
+                    Padding="24,20,24,16">
+
+                        <TextBlock x:Name="currentProjectName" Text="{Binding Name}" FontSize="18" />
+                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                            <!--<TextBlock x:Name="errorDetails" Text="Couldn't load" FontSize="12" Margin="0,0,4,0" Foreground="#FFC42B1C" />-->
+                            <TextBlock x:Name="currentProjectDetails" Text="{Binding Status}" FontSize="12" Style="{StaticResource DownloadStatusText}" />
+                            <TextBlock x:Name="detailTextBlock"  Margin="4,0,0,0" Text="Details" FontSize="12" Foreground="#003E92" />
+                        </StackPanel>
+                        <!--<Grid x:Name="progressBar" Margin="0,14">
+                            <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                            <ProgressBar x:Name="currentProjectProgress" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                        </Grid>
+                        <StackPanel x:Name="pausecancelButton" Orientation="Horizontal">
+                            <Button x:Name="firstButton"  Content="First" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Background="#FF005FB8" Foreground="White" />
+                            <Button x:Name="secondButton"  Content="Second" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Margin="8,0,0,0"/>
+                            <Button x:Name="thirdButton" Content="Third" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Margin="8,0,0,0"/>
+                        </StackPanel>-->
+                        <Grid x:Name="openfolderButton" Margin="0,16,0,0">
+                            <Button Content="Open Folder" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" 
+                                    Command="{Binding Data.OpenFolderCommand, Source={StaticResource Proxy} }"
+                                    CommandParameter="{x:Bind}"
+                                    Height="30"/>
+                        </Grid>
+                    </StackPanel>
+                </DataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+
+    </Grid>
+</Page>
