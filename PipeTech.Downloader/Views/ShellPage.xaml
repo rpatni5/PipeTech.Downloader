@@ -10,13 +10,13 @@
     Unloaded="OnUnloaded"
     mc:Ignorable="d">
     <!--RequestedTheme="{x:Bind ViewModel.CurrentTheme, Mode=OneWay}"-->
-    <Grid>
+    <Grid >
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="50" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <tb:TaskbarIcon x:Name="taskbarIcon"
+        <tb:TaskbarIcon x:Name="taskbarIcon" 
                         IconSource="/Assets/WindowIcon.ico" 
                         DoubleClickCommand="{x:Bind ViewModel.ShowCommand}"
                         MenuActivation="RightClick">
@@ -31,33 +31,50 @@
         </tb:TaskbarIcon>
 
         <Grid Grid.Row="0" x:Name="AppTitleBar">
-            <!--<Image Source="/Assets/WindowIcon.ico" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>-->
-            <!--<TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="32, 0, 0, 0"/>-->
+            <Image Source="/Assets/WindowIcon.ico" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>
+            <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="32, 0, 0, 0"/>
         </Grid>
-        <Grid Grid.Row="1">
+
+        <Grid x:Name="childScreen" Grid.Row="1" 
+              HorizontalAlignment="Stretch" 
+              Visibility="{Binding ElementName=NavigationFrame, Path=Content.DataContext.IsChildScreen,Converter={StaticResource BoolToVisibilityConverter},FallbackValue=true}"
+              Background="#FFF1F1F1" >
+            <Grid HorizontalAlignment="Left" VerticalAlignment="Top" Background="#FFF1F1F1" Height="48">
+                <Grid HorizontalAlignment="Left" Margin="12">
+                    <Button Command="{Binding NavigateBackCommand}" Background="Transparent" BorderThickness="0">
+                        <SymbolIcon Symbol="Back" HorizontalAlignment="Center" Width="12" Height="12"/>
+                    </Button>
+                </Grid>
+                <Grid HorizontalAlignment="Left" Margin="52,0">
+                    <TextBlock  Text="{Binding ElementName=NavigationFrame, Path=Content.DataContext.ScreenTitle}" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="14" Margin="0" />
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" 
+              VerticalAlignment="Top" 
+              Background="#FFF1F1F1" 
+              Height="48" 
+              Visibility="{Binding ElementName=NavigationFrame, Path=Content.DataContext.IsChildScreen,Converter={StaticResource NotBoolToVisibilityConverter},FallbackValue=false}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <!--<MenuBar Grid.Column="0">
-                --><!--
-                TODO: Update item titles by updating <x:Uid>.Text entries in Strings/en-us/Resources.resw.
-                https://docs.microsoft.com/windows/uwp/app-resources/localize-strings-ui-manifest#refer-to-a-string-resource-identifier-from-xaml
-                --><!--
-                <MenuBarItem x:Uid="ShellMenuBarItem_File">
-                    <MenuFlyoutItem x:Uid="ShellMenuItem_File_Exit" Command="{x:Bind ViewModel.MenuFileExitCommand}" />
-                </MenuBarItem>
-                <MenuBarItem x:Uid="ShellMenuBarItem_Views">
-                    <MenuBarItem.Items>
-                        <MenuFlyoutItem x:Uid="ShellMenuItem_Views_Downloads" Command="{x:Bind ViewModel.MenuViewsDownloadsCommand}" />
-                        <MenuFlyoutItem x:Uid="ShellMenuItem_Views_Main" Command="{x:Bind ViewModel.MenuViewsMainCommand}" />
-                    </MenuBarItem.Items>
-                </MenuBarItem>
-            </MenuBar>-->
-            <Image Source="{x:Bind ViewModel.CurrentSVGSource, Mode=OneWay}" 
-                   Margin="10,10,0,0"
-                   HorizontalAlignment="Left"/>
-            <AppBarButton Grid.Column="1" 
+            <Button Command="{Binding HomePressCommand}" Background="Transparent" BorderThickness="0">
+                <StackPanel HorizontalAlignment="Left" Width="100">
+                    <TextBlock Text="{Binding ElementName=NavigationFrame, Path=Content.DataContext.ScreenTitle}" HorizontalAlignment="Center"  VerticalAlignment="Center" FontSize="14" Margin="12,0" />
+                    <Rectangle Height="3" Stroke="Transparent" 
+                               Visibility="{Binding IsHomeScreen, Converter={StaticResource BoolToVisibilityConverter}}"
+                               VerticalAlignment="Bottom" 
+                               Width="16" 
+                               Fill="#005FB8" 
+                               Margin="0,4" />
+                </StackPanel>
+            </Button>
+
+            <StackPanel Grid.Column="1" Orientation="Vertical">
+                <AppBarButton 
+                    Height="40"
                           x:Name="ShellMenuBarSettingsButton" 
                           x:Uid="ShellMenuBarSettingsButton"
                           AnimatedIcon.State="Normal"
@@ -67,22 +84,33 @@
                           PointerEntered="ShellMenuBarSettingsButton_PointerEntered"
                           PointerExited="ShellMenuBarSettingsButton_PointerExited"
                           Command="{x:Bind ViewModel.MenuSettingsCommand}">
-                <AnimatedIcon x:Name="ShellMenuBarSettingsButtonIcon"
+                    <AnimatedIcon x:Name="ShellMenuBarSettingsButtonIcon"
                               VerticalAlignment="Center">
-                    <AnimatedIcon.Source>
-                        <animatedvisuals:AnimatedSettingsVisualSource/>
-                    </AnimatedIcon.Source>
-                    <AnimatedIcon.FallbackIconSource>
-                        <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
-                    </AnimatedIcon.FallbackIconSource>
-                </AnimatedIcon>
-            </AppBarButton>
+                        <AnimatedIcon.Source>
+                            <animatedvisuals:AnimatedSettingsVisualSource/>
+                        </AnimatedIcon.Source>
+                        <AnimatedIcon.FallbackIconSource>
+                            <FontIconSource FontFamily="{StaticResource SymbolThemeFontFamily}" Glyph="&#xE713;"/>
+                        </AnimatedIcon.FallbackIconSource>
+                    </AnimatedIcon>
+                </AppBarButton>
+
+                <Rectangle Height="3" Stroke="Transparent" 
+                               VerticalAlignment="Bottom" 
+                               Visibility="{Binding IsHomeScreen, Converter={StaticResource NotBoolToVisibilityConverter}}"
+                               Width="16" 
+                               Fill="#005FB8" 
+                               Margin="0,4" />
+            </StackPanel>
         </Grid>
-        <Grid Grid.Row="2" Margin="{StaticResource MenuBarContentMargin}">
+
+
+
+        <Grid Grid.Row="2" Margin="{StaticResource MenuBarContentMargin}" >
             <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" 
                           VerticalScrollBarVisibility="Auto"
                           Padding="0,0,12,0">-->
-                <Frame x:Name="NavigationFrame"  />
+            <Frame x:Name="NavigationFrame"  />
             <!--</ScrollViewer>-->
         </Grid>
     </Grid>

@@ -17,7 +17,7 @@ public sealed partial class DownloadDetailPage : Page
     /// </summary>
     public DownloadDetailPage()
     {
-        this.ViewModel = App.GetService<DownloadDetailViewModel>();
+        this.DataContext = ViewModel= App.GetService<DownloadDetailViewModel>();
         this.InitializeComponent();
     }
 

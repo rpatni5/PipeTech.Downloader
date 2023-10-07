@@ -2,6 +2,7 @@
 // Copyright (c) Industrial Technology Group. All rights reserved.
 // </copyright>
 
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -10,12 +11,14 @@ using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.UI.Controls;
 using Hangfire;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using PipeTech.Downloader.Contracts.Services;
 using PipeTech.Downloader.Contracts.ViewModels;
 using PipeTech.Downloader.Models;
+using Syncfusion.Data.Extensions;
 using Windows.System;
 
 namespace PipeTech.Downloader.ViewModels;
@@ -34,6 +37,7 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
     private bool expanding = false;
     private ElementTheme requestedTheme = ElementTheme.Default;
     private ContentDialog? dialog = null;
+    private readonly INavigationService navigationService;
 
     /// <summary>
     /// Gets or sets the row visibility.
@@ -55,6 +59,7 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
         IDownloadService downloadService,
         IBackgroundJobClientV2 jobClient,
         IThemeSelectorService themeSelectorService,
+        INavigationService navigationService,
         ILogger<DownloadsViewModel>? logger = null)
     {
         this.serviceProvider = serviceProvider;
@@ -62,13 +67,16 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
         this.jobClient = jobClient;
         this.themeSelectorService = themeSelectorService;
         this.logger = logger;
+        this.navigationService = navigationService;
 
         this.OpenFolderCommand = new AsyncRelayCommand<object?>(this.ExecuteOpenFolder);
         this.RemoveProjectCommand = new AsyncRelayCommand<object?>(this.RemoveProject);
         this.RestartProjectDownloadCommand = new AsyncRelayCommand<object?>(this.ExecuteRestartProjectDownload);
         this.PauseProjectDownloadCommand = new AsyncRelayCommand<object?>(this.ExecutePauseProjectDownload);
         this.ShowDetailsCommand = new AsyncRelayCommand<object?>(this.ExecuteShowDetails);
-        this.SourceView = CollectionViewSource.GetDefaultView(this.downloadService.Source);
+        this.SourceView = this.downloadService.SourceGroup;
+        this.ScreenTitle = "Downloads";
+        this.IsChildScreen = false;
     }
 
     /////// <summary>
@@ -79,9 +87,13 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
     /// <summary>
     /// Gets the source view.
     /// </summary>
-    public ICollectionView SourceView
+    /// 
+
+    private ObservableCollection<ProjectGroup> sourceView;
+    public ObservableCollection<ProjectGroup> SourceView
     {
-        get;
+        get => this.sourceView;
+        protected set => this.SetProperty(ref this.sourceView, value);
     }
 
     /// <summary>
@@ -134,7 +146,7 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
     }
 
     /// <inheritdoc/>
-    public void OnNavigatedTo(object parameter)
+    public async void OnNavigatedTo(object parameter)
     {
         this.RequestedTheme = this.themeSelectorService.Theme;
         var messenger = this.serviceProvider.GetService(typeof(IMessenger)) as IMessenger;
@@ -160,7 +172,8 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
             expandedProject.Expanded = !expandedProject.Expanded;
         }
 
-        _ = this.downloadService.LoadDownloads(new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token);
+        await this.downloadService.LoadDownloads(new CancellationTokenSource(TimeSpan.FromMinutes(10)).Token);
+        this.SourceView = this.downloadService.SourceGroup;
     }
 
     /// <inheritdoc/>
@@ -186,6 +199,14 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
                 p.Expanded = false;
             }
         }
+    }
+
+    [RelayCommand]
+    private async Task GoToDetailsView(object? param)
+    {
+        this.navigationService.NavigateTo(typeof(DownloadDetailViewModel).FullName!, param, clearNavigation: false);
+        await Task.CompletedTask;
+        return;
     }
 
     private async Task ExecuteShowDetails(object? param)
@@ -265,6 +286,10 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
             }
 
             this.downloadService.Source.Remove(p);
+
+            this.downloadService.PrepareSourceGroup();
+
+            this.SourceView = this.downloadService.SourceGroup;
 
             var dir = new DirectoryInfo(Path.GetDirectoryName(p.FilePath) ?? string.Empty);
             if (dir.Exists)
@@ -398,7 +423,7 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
                             }
 
                             this.VisibilityMode = DataGridRowDetailsVisibilityMode.VisibleWhenSelected;
-                            this.SourceView.MoveCurrentTo(p);
+                            //this.SourceView.MoveCurrentTo(p);
                             this.RaisePropertyChanged(nameof(this.RequestedTheme));
                         }
                         catch (Exception ex)
@@ -413,7 +438,7 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
                     else if (!this.expanding)
                     {
                         this.VisibilityMode = DataGridRowDetailsVisibilityMode.Collapsed;
-                        this.SourceView.MoveCurrentTo(null);
+                        //this.SourceView.MoveCurrentTo(null);
                         this.RaisePropertyChanged(nameof(this.RequestedTheme));
                     }
                 }

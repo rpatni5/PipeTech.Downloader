@@ -39,6 +39,9 @@ public partial class ShellViewModel : BindableRecipient
     [ObservableProperty]
     private ElementTheme currentTheme;
 
+    [ObservableProperty]
+    private bool isHomeScreen = true;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ShellViewModel"/> class.
     /// </summary>
@@ -229,15 +232,41 @@ public partial class ShellViewModel : BindableRecipient
 
     private void OnMenuSettings()
     {
-        if (this.NavigationService.Frame?.Content?.GetType() == typeof(SettingsPage))
+        this.IsHomeScreen = false;
+
+        if (this.NavigationService.Frame?.Content?.GetType() != typeof(SettingsPage))
+        {
+            this.NavigationService.NavigateTo(typeof(SettingsViewModel).FullName!, clearNavigation: true);
+        }
+    }
+
+    private void OnMenuViewsMain() => this.NavigationService.NavigateTo(typeof(MainViewModel).FullName!);
+
+    [RelayCommand]
+    private async Task NavigateBack(object? param)
+    {
+        if (this.NavigationService.CanGoBack)
         {
             this.NavigationService.GoBack();
         }
         else
         {
-            this.NavigationService.NavigateTo(typeof(SettingsViewModel).FullName!);
+            await HomePress(null);
         }
+        await Task.CompletedTask;
+        return;
     }
 
-    private void OnMenuViewsMain() => this.NavigationService.NavigateTo(typeof(MainViewModel).FullName!);
+    [RelayCommand]
+    private async Task HomePress(object? param)
+    {
+        this.IsHomeScreen = true;
+        if (this.NavigationService.Frame?.Content?.GetType() != typeof(DownloadsPage))
+        {
+            this.NavigationService.NavigateTo(typeof(DownloadsViewModel).FullName!, clearNavigation: true);
+        }
+        await Task.CompletedTask;
+        return;
+    }
+
 }

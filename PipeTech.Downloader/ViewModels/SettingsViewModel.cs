@@ -2,6 +2,7 @@
 // Copyright (c) Industrial Technology Group. All rights reserved.
 // </copyright>
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Windows.Input;
 
@@ -12,7 +13,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using PipeTech.Downloader.Contracts.Services;
 using PipeTech.Downloader.Helpers;
-
+using PipeTech.Downloader.Models;
 using Windows.ApplicationModel;
 using Windows.System;
 
@@ -21,7 +22,7 @@ namespace PipeTech.Downloader.ViewModels;
 /// <summary>
 /// Setting vide model class.
 /// </summary>
-public partial class SettingsViewModel : ObservableRecipient
+public partial class SettingsViewModel : BindableRecipient
 {
     private readonly IThemeSelectorService themeSelectorService;
     private readonly ILocalSettingsService localSettingsService;
@@ -36,6 +37,35 @@ public partial class SettingsViewModel : ObservableRecipient
     [ObservableProperty]
     private string? dataFolder;
 
+    [ObservableProperty]
+    private ObservableCollection<string> themes;
+
+    private string selectedTheme;
+
+    public string SelectedTheme
+    {
+        get
+        {
+            return this.selectedTheme;
+        }
+        set
+        {
+            this.selectedTheme = value;
+            this.UpdateTheme((ElementTheme)Enum.Parse(typeof(ElementTheme), this.selectedTheme, true));
+            this.RaisePropertyChanged();
+        }
+    }
+
+    private async void UpdateTheme(ElementTheme param)
+    {
+        if (this.ElementTheme != param)
+        {
+            this.ElementTheme = param;
+            await this.themeSelectorService.SetThemeAsync(param);
+        }
+    }
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
     /// </summary>
@@ -47,11 +77,17 @@ public partial class SettingsViewModel : ObservableRecipient
         ILocalSettingsService localSettingsService,
         INavigationService navigationService)
     {
+        this.ScreenTitle = "Downloads";
+        this.IsChildScreen = false;
+
         this.themeSelectorService = themeSelectorService;
         this.navigationService = navigationService;
         this.localSettingsService = localSettingsService;
-        this.elementTheme = this.themeSelectorService.Theme;
         this.versionDescription = GetVersionDescription();
+
+        this.Themes = new ObservableCollection<string> { "Light", "Dark", "Default" };
+        this.ElementTheme = this.themeSelectorService.Theme;
+        this.selectedTheme = this.ElementTheme.ToString();
 
         this.EmailCommand = new AsyncRelayCommand(() =>
         {

@@ -27,6 +27,7 @@ public class PageService : IPageService
         this.Configure<MainViewModel, MainPage>();
         this.Configure<SettingsViewModel, SettingsPage>();
         this.Configure<DownloadsViewModel, DownloadsPage>();
+        this.Configure<DownloadDetailViewModel, DownloadDetailPage>();
     }
 
     /// <inheritdoc/>

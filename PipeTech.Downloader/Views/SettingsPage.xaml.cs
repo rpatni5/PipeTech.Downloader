@@ -18,7 +18,7 @@ public sealed partial class SettingsPage : Page
     /// </summary>
     public SettingsPage()
     {
-        this.ViewModel = App.GetService<SettingsViewModel>();
+        this.DataContext = this.ViewModel = App.GetService<SettingsViewModel>();
         this.InitializeComponent();
     }
 

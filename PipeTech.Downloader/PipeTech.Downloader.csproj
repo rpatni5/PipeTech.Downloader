@@ -48,6 +48,7 @@
 	<ItemGroup>
 	  <None Remove="Views\DownloadDetailPage.xaml" />
 	  <None Remove="Views\DownloadsListPage.xaml" />
+	  <None Remove="Views\HeaderView.xaml" />
 	  <None Remove="Views\SettingsUpdatedPage.xaml" />
 	</ItemGroup>
 
@@ -139,6 +140,9 @@
 		<None Update="Assets\Logo.svg">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<Page Update="Views\HeaderView.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<Page Update="Views\SettingsUpdatedPage.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 		</Page>

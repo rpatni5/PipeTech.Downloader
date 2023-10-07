@@ -6,10 +6,12 @@ using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.WinUI;
 using Hangfire;
 using Hangfire.Common;
+using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NASSCO_ExV;
@@ -26,13 +28,14 @@ using PT.Inspection.Reporting;
 using PT.Inspection.Templates;
 using PT.Inspection.Wpf;
 using PT.Model;
+using Syncfusion.Data.Extensions;
 
 namespace PipeTech.Downloader.Services;
 
 /// <summary>
 /// Download service class.
 /// </summary>
-public class DownloadService : ObservableObject, IDownloadService
+public partial class DownloadService : ObservableObject, IDownloadService
 {
     /// <summary>
     /// Part minimum size.
@@ -87,6 +90,7 @@ public class DownloadService : ObservableObject, IDownloadService
         this.documentFactory = documentFactory;
         this.logger = logger;
 
+        this.SourceGroup = new();
         this.Source = new();
         this.Source.CollectionChanged += this.Source_CollectionChanged;
 
@@ -103,11 +107,21 @@ public class DownloadService : ObservableObject, IDownloadService
 #endif
     }
 
-    /// <inheritdoc/>
     public ObservableCollection<Project> Source
     {
         get;
     }
+
+    //[ObservableProperty]
+    //private ObservableCollection<ProjectGroup> sourceGroup;
+
+    private ObservableCollection<ProjectGroup> sourceGroup;
+    public ObservableCollection<ProjectGroup> SourceGroup
+    {
+        get => this.sourceGroup;
+        set => this.SetProperty(ref this.sourceGroup, value);
+    }
+
 
     /// <inheritdoc/>
     public async Task LoadDownloads(CancellationToken token = default)
@@ -118,113 +132,149 @@ public class DownloadService : ObservableObject, IDownloadService
             return;
         }
 
-        await Task.Run(
-            async () =>
+        var release = false;
+        try
+        {
+            await Semaphore.WaitAsync(token);
+            release = true;
+            foreach (var dir in Directory.GetDirectories(this.paths.MachineSettingsDirectory))
             {
-                var release = false;
+                if (string.IsNullOrEmpty(dir))
+                {
+                    continue;
+                }
+
                 try
                 {
-                    await Semaphore.WaitAsync(token);
-                    release = true;
-                    foreach (var dir in Directory.GetDirectories(this.paths.MachineSettingsDirectory))
+                    var infoFilePath = Path.Combine(dir, "info.json");
+                    if (!System.IO.File.Exists(infoFilePath))
                     {
-                        if (string.IsNullOrEmpty(dir))
+                        continue;
+                    }
+
+                    var project = Project.FromJson(System.IO.File.ReadAllText(infoFilePath));
+                    if (project is null)
+                    {
+                        this.logger?.LogWarning($"Info about download unable to be parsed. [{infoFilePath}]");
+                        continue;
+                    }
+
+                    project.FilePath = infoFilePath;
+
+                    if (!this.Source.Any(p => p.Id == project.Id))
+                    {
+                        var count = 0;
+                        while (count <= 1000)
                         {
-                            continue;
-                        }
-
-                        try
-                        {
-                            var infoFilePath = Path.Combine(dir, "info.json");
-                            if (!System.IO.File.Exists(infoFilePath))
+                            count++;
+                            bool AddRemove()
                             {
-                                continue;
-                            }
-
-                            var project = Project.FromJson(System.IO.File.ReadAllText(infoFilePath));
-                            if (project is null)
-                            {
-                                this.logger?.LogWarning($"Info about download unable to be parsed. [{infoFilePath}]");
-                                continue;
-                            }
-
-                            project.FilePath = infoFilePath;
-
-                            if (!this.Source.Any(p => p.Id == project.Id))
-                            {
-                                var count = 0;
-                                while (count <= 1000)
+                                try
                                 {
-                                    count++;
-                                    bool AddRemove()
+                                    this.Source.Insert(0, project);
+                                    return true;
+                                }
+                                catch (Exception)
+                                {
+                                    try
                                     {
-                                        try
-                                        {
-                                            this.Source.Insert(0, project);
-                                            return true;
-                                        }
-                                        catch (Exception)
-                                        {
-                                            try
-                                            {
-                                                this.Source.Remove(project);
-                                            }
-                                            catch (Exception)
-                                            {
-                                            }
-                                        }
-
-                                        return false;
+                                        this.Source.Remove(project);
                                     }
-
-                                    if (App.MainWindow.DispatcherQueue.HasThreadAccess)
+                                    catch (Exception)
                                     {
-                                        if (AddRemove())
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        var b = await App.MainWindow.DispatcherQueue.EnqueueAsync(
-                                            () =>
-                                            {
-                                                return AddRemove();
-                                            },
-                                            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low);
-
-                                        if (b)
-                                        {
-                                            break;
-                                        }
                                     }
                                 }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            this.logger?.LogError(ex, $"Error getting download at path [{dir}]");
-                        }
 
-                        if (token.IsCancellationRequested)
-                        {
-                            return;
+                                return false;
+                            }
+
+                            if (AddRemove())
+                            {
+                                break;
+                            }
+
+                            //if (App.MainWindow.DispatcherQueue.HasThreadAccess)
+                            //{
+                            //    if (AddRemove())
+                            //    {
+                            //        break;
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    var b = await App.MainWindow.DispatcherQueue.EnqueueAsync(
+                            //        () =>
+                            //        {
+                            //            return AddRemove();
+                            //        },
+                            //        Microsoft.UI.Dispatching.DispatcherQueuePriority.Low);
+
+                            //    if (b)
+                            //    {
+                            //        break;
+                            //    }
+                            //}
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    this.logger?.LogError(ex, $"Error getting download");
+                    this.logger?.LogError(ex, $"Error getting download at path [{dir}]");
                 }
-                finally
+
+                if (token.IsCancellationRequested)
                 {
-                    if (release)
-                    {
-                        Semaphore.Release();
-                    }
+                    return;
                 }
-            },
-            token);
+            }
+
+            PrepareSourceGroup();
+
+        }
+        catch (Exception ex)
+        {
+            this.logger?.LogError(ex, $"Error getting download");
+        }
+        finally
+        {
+            if (release)
+            {
+                Semaphore.Release();
+            }
+        }
+
+    }
+
+    public void PrepareSourceGroup()
+    {
+        this.SourceGroup = Source.GroupBy(
+                            p => GetKey(p),
+                            p => p,
+                            (key, g) => new ProjectGroup(key, g.ToList())).ToObservableCollection();
+
+        //this.sourceGroup.Clear();
+        //this.sourceGroup.AddRange(result);
+    }
+
+    private string GetKey(Project project)
+    {
+        var date = project.ConfirmationTime.Value.Date;
+        if (date == DateTime.Now.Date)
+        {
+            return "Today";
+        }
+        else if (date == DateTime.Now.Date.AddDays(1))
+        {
+            return "Tomorrow";
+
+        }
+        else if (date == DateTime.Now.Date.AddDays(-1))
+        {
+            return "Yesterday";
+
+        }
+
+        return project.ConfirmationTime.Value.Humanize(false, DateTime.Now);
     }
 
     /// <inheritdoc/>

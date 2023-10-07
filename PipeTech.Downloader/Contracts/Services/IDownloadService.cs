@@ -21,6 +21,11 @@ public interface IDownloadService
         get;
     }
 
+    public ObservableCollection<ProjectGroup> SourceGroup
+    {
+        get; set;
+    }    
+
     /// <summary>
     /// Load the download from the file system.
     /// </summary>
@@ -57,5 +62,10 @@ public interface IDownloadService
     /// <param name="token">Cancellation token.</param>
     /// <returns>Asynchronous task.</returns>
     public Task Test(CancellationToken token);
+
+    /// <summary>
+    /// this is just to refresh grouping of projects
+    /// </summary>
+    public void PrepareSourceGroup();
 #endif
 }

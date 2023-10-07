@@ -200,6 +200,10 @@
     <value>Downloads</value>
     <comment>Page title for DownloadsPage</comment>
   </data>
+  <data name="DownloadDetail_Title.Text" xml:space="preserve">
+    <value>Details</value>
+    <comment>Details Page title for DownloadDetailPage</comment>
+  </data>
   <data name="Settings_Browse.Content" xml:space="preserve">
     <value>Browse</value>
   </data>
@@ -213,19 +217,19 @@
     <value>Support Information</value>
   </data>
   <data name="Settings_Support_CallLink.Content" xml:space="preserve">
-    <value>Call: 616-676-9811</value>
+    <value>616-676-9811</value>
   </data>
   <data name="Settings_Support_CallLink.NavigateUri" xml:space="preserve">
     <value>tel:616-676-9811</value>
   </data>
   <data name="Settings_Support_EmailLink.Content" xml:space="preserve">
-    <value>Email: support@pipetech.com</value>
+    <value>support@pipetech.com</value>
   </data>
   <data name="Settings_Support_EmailLink.NavigateUri" xml:space="preserve">
     <value>mailto:support@pipetech.com</value>
   </data>
   <data name="Settings_Support_RemoteLink.Content" xml:space="preserve">
-    <value>Start Remote Session: helpdesk.pipetech.com</value>
+    <value>helpdesk.pipetech.com</value>
   </data>
   <data name="Settings_Support_RemoteLink.NavigateUri" xml:space="preserve">
     <value>http://helpdesk.pipetech.com</value>

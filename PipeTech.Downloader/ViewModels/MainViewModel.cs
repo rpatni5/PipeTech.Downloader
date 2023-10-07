@@ -76,6 +76,7 @@ public partial class MainViewModel : BindableRecipient, INavigationAware, IDispo
         IOptions<SettingsDirectoryPaths> options,
         ILogger<MainViewModel>? logger = null)
     {
+        this.ScreenTitle = "Download";
         this.navigationService = navigationService;
         this.hubService = hubService;
         this.serviceProvider = serviceProvider;

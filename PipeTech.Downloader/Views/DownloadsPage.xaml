@@ -10,12 +10,15 @@
     xmlns:behaviors="using:PipeTech.Downloader.Behaviors"
     xmlns:Interactivity="using:Microsoft.Xaml.Interactivity"
     xmlns:Core="using:Microsoft.Xaml.Interactions.Core" 
+    xmlns:local="using:PipeTech.Downloader.Views"
+    xmlns:toolkit="using:CommunityToolkit.Common" xmlns:x1="using:System"
     mc:Ignorable="d">
     <Page.Resources>
 
         <helpers:NumberToPercentageStringConverter x:Key="NumberToPercentageStringConverter" />
         <helpers:NumberBytesToStorageStringConverter x:Key="NumberBytesToStorageStringConverter" />
         <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
+        <helpers:StatusTextMultivalueConverter x:Key="StatusTextMultivalueConverter" /> 
 
         <helpers:BindingProxy x:Key="Proxy" Data="{x:Bind ViewModel, Mode=OneWay}"/>
 
@@ -120,7 +123,20 @@
             <Setter Property="FontSize" Value="12" />
             <Setter Property="Foreground" Value="#9A000000" />
         </Style>
+
+        <Style TargetType="TreeViewItem">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
     </Page.Resources>
+
     <Grid x:Name="ContentArea">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
@@ -501,46 +517,177 @@
         </controls:DataGrid>
         <!--</ScrollViewer>-->
         <TreeView  x:Name="itemListView"
-          Grid.Row="1"
-                   Margin="0"
+                   Grid.Row="1"
+                   Margin="0,10"
                    Padding="0"
-          ItemsSource="{x:Bind ViewModel.SourceView, Mode=OneWay}" >
+          ItemsSource="{Binding SourceView, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
             <TreeView.ItemTemplate>
-                <DataTemplate x:DataType="models:Project">
-                    <StackPanel 
-                    x:Name="currentProjectPanel"
-                    Background="White" 
-                    CornerRadius="7" 
-                    HorizontalAlignment="Stretch" 
-                    VerticalAlignment="Top" 
-                    Margin="-40,0,0,0" 
-                    BorderBrush="#EAEAEA" 
-                    BorderThickness="1"
-                    Padding="24,20,24,16">
+                <DataTemplate x:DataType="models:ProjectGroup">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock Margin="0,5" Text="{Binding GroupTitle}" FontSize="14" FontWeight="Medium" />
+                        <TreeView  ItemsSource="{Binding Projects, Mode=OneWay}" >
+                            <TreeView.ItemTemplate>
+                                <DataTemplate x:DataType="models:Project">
+                                    <StackPanel 
+                                                x:Name="currentProjectPanel"
+                                                Background="White" 
+                                                CornerRadius="7" 
+                                                HorizontalAlignment="Stretch" 
+                                                VerticalAlignment="Top" 
+                                                Margin="0,0,0,0" 
+                                                BorderBrush="#EAEAEA" 
+                                                BorderThickness="1"
+                                                Padding="24,20,24,16">
 
-                        <TextBlock x:Name="currentProjectName" Text="{Binding Name}" FontSize="18" />
-                        <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                            <!--<TextBlock x:Name="errorDetails" Text="Couldn't load" FontSize="12" Margin="0,0,4,0" Foreground="#FFC42B1C" />-->
-                            <TextBlock x:Name="currentProjectDetails" Text="{Binding Status}" FontSize="12" Style="{StaticResource DownloadStatusText}" />
-                            <TextBlock x:Name="detailTextBlock"  Margin="4,0,0,0" Text="Details" FontSize="12" Foreground="#003E92" />
-                        </StackPanel>
-                        <!--<Grid x:Name="progressBar" Margin="0,14">
-                            <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
-                            <ProgressBar x:Name="currentProjectProgress" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
-                        </Grid>
-                        <StackPanel x:Name="pausecancelButton" Orientation="Horizontal">
-                            <Button x:Name="firstButton"  Content="First" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Background="#FF005FB8" Foreground="White" />
-                            <Button x:Name="secondButton"  Content="Second" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Margin="8,0,0,0"/>
-                            <Button x:Name="thirdButton" Content="Third" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Margin="8,0,0,0"/>
-                        </StackPanel>-->
-                        <Grid x:Name="openfolderButton" Margin="0,16,0,0">
-                            <Button Content="Open Folder" HorizontalAlignment="Left" VerticalAlignment="Top" Width="100" 
-                                    Command="{Binding Data.OpenFolderCommand, Source={StaticResource Proxy} }"
-                                    CommandParameter="{x:Bind}"
-                                    Height="30"/>
-                        </Grid>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="100"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <TextBlock x:Name="currentProjectName" Text="{Binding Name}" FontSize="18" />
+
+                                            <Button x:Name="cancelButton"
+                                                        Content="x" 
+                                                        Height="24"
+                                                        Width="24"
+                                                        Grid.Column="1"
+                                                        FontSize="20" 
+                                                        Margin="0,-6,0,0"
+                                                        Padding="0,-6,0,0"
+                                                        VerticalAlignment="Top"
+                                                        Command="{Binding Data.RemoveProjectCommand, Source={StaticResource Proxy} }"
+                                                        Visibility="{Binding WasCompleted, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                        CommandParameter="{x:Bind}"
+                                                        VerticalContentAlignment="Top"
+                                                        HorizontalAlignment="Right" />
+
+                                        </Grid>
+
+                                        <ContentPresenter >
+                                            <Interactivity:Interaction.Behaviors>
+                                                <behaviors:ContentPresenterTemplateBehavior
+                                                State="{x:Bind State, Mode=OneWay}">
+                                                    <behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                                        <DataTemplate x:DataType="models:Project">
+                                                            <StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                                    <!--<TextBlock x:Name="errorDetails" Text="Couldn't load" FontSize="12" Margin="0,0,4,0" Foreground="#FFC42B1C" />-->
+                                                                    <TextBlock Text="{Binding Status}" FontSize="12" Style="{StaticResource DownloadStatusText}" />
+                                                                    <Button      
+                                                                            Margin="0,-5,0,0" 
+                                                                            Content="Details" 
+                                                                            Background="Transparent"
+                                                                            BorderThickness="0"                                    
+                                                                            FontSize="12" 
+                                                                            Foreground="#003E92"
+                                                                            VerticalContentAlignment="Top"
+                                                                            CommandParameter="{Binding }"
+                                                                            Command="{Binding Data.GoToDetailsViewCommand, Source={StaticResource Proxy} }" >
+
+                                                                    </Button>
+                                                                </StackPanel>
+                                                                
+                                                                <Grid x:Name="progressBar" Margin="0,14">
+                                                                    <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                    <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                </Grid>
+                                                                <Button x:Name="pauseButton"  
+                                                                            Content="Pause" 
+                                                                            HorizontalAlignment="Left" 
+                                                                            VerticalAlignment="Top" 
+                                                                            Height="30" 
+                                                                            Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
+                                                                            CommandParameter="{x:Bind}"
+                                                                            Background="#FF005FB8" 
+                                                                            Foreground="White" />
+
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </behaviors:ContentPresenterTemplateBehavior.PauseTemplate>
+                                                    <behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                                        <DataTemplate x:DataType="models:Project">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Paused while loading" FontSize="12" Margin="0,8,4,0" Style="{StaticResource DownloadStatusText}" />
+
+                                                                <Grid Margin="0,14">
+                                                                    <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                    <ProgressBar Foreground="#FFC42B1C" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                </Grid>
+
+                                                                <Grid Margin="0,0,0,0">
+                                                                    <Button Content="Resume" 
+                                                                        HorizontalAlignment="Left" 
+                                                                        VerticalAlignment="Top" 
+                                                                        Foreground="White"
+                                                                        Background="#FF005FB8"
+                                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                                        CommandParameter="{x:Bind}"
+                                                                        />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
+                                                    <behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                                        <DataTemplate x:DataType="models:Project">
+                                                            <StackPanel>
+                                                                <TextBlock Text="Couldn't load" FontSize="12" Margin="0,4,4,0" Foreground="#FFC42B1C" Style="{StaticResource DownloadStatusText}" />
+
+                                                                <Grid x:Name="errorProgressBar" Margin="0,14">
+                                                                    <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                    <ProgressBar Foreground="#FFC42B1C" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                </Grid>
+                                                                <Grid Margin="0">
+                                                                    <Button Content="Retry" 
+                                                                        HorizontalAlignment="Left" 
+                                                                        VerticalAlignment="Top" 
+                                                                        Background="#B3FFFFFF"
+                                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                                        CommandParameter="{x:Bind}" />
+                                                                </Grid>
+                                                            </StackPanel>
+                                                        </DataTemplate>
+                                                    </behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
+                                                    <behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                                        <DataTemplate x:DataType="models:Project">
+                                                            <StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                                                    <!--<TextBlock x:Name="errorDetails" Text="Couldn't load" FontSize="12" Margin="0,0,4,0" Foreground="#FFC42B1C" />-->
+                                                                    <TextBlock Text="{Binding Status}" FontSize="12" Style="{StaticResource DownloadStatusText}" />
+                                                                    <Button      
+                                                                            Margin="0,-5,0,0" 
+                                                                            Content="Details" 
+                                                                            Background="Transparent"
+                                                                            BorderThickness="0"                                    
+                                                                            FontSize="12" 
+                                                                            Foreground="#003E92"
+                                                                            VerticalContentAlignment="Top"
+                                                                            CommandParameter="{Binding }"
+                                                                            Command="{Binding Data.GoToDetailsViewCommand, Source={StaticResource Proxy} }" >
+
+                                                                    </Button>
+                                                                </StackPanel>
+                                                                <Grid x:Name="openfolderButton" Margin="0,16,0,0">
+                                                                    <Button Content="Open Folder" HorizontalAlignment="Left" VerticalAlignment="Top"  
+                                                                    Command="{Binding Data.OpenFolderCommand, Source={StaticResource Proxy} }"
+                                                                    CommandParameter="{x:Bind}" />
+                                                                </Grid>
+                                                            </StackPanel>
+
+                                                        </DataTemplate>
+                                                    </behaviors:ContentPresenterTemplateBehavior.CompletedTemplate>
+                                                </behaviors:ContentPresenterTemplateBehavior>
+                                            </Interactivity:Interaction.Behaviors>
+                                        </ContentPresenter>
+
+                                    </StackPanel>
+
+                                </DataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
                     </StackPanel>
                 </DataTemplate>
+
             </TreeView.ItemTemplate>
         </TreeView>
 

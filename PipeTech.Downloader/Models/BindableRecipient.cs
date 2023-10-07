@@ -11,7 +11,7 @@ namespace PipeTech.Downloader.Models;
 /// <summary>
 /// Bindable Recipient class.
 /// </summary>
-public class BindableRecipient : ObservableRecipient
+public partial class BindableRecipient : ObservableRecipient
 {
     /// <summary>
     /// Raises this object's PropertyChanged event.
@@ -34,4 +34,10 @@ public class BindableRecipient : ObservableRecipient
     {
         this.OnPropertyChanging(propertyName);
     }
+
+    [ObservableProperty]
+    private string screenTitle;
+
+    [ObservableProperty]
+    private bool isChildScreen = true;
 }

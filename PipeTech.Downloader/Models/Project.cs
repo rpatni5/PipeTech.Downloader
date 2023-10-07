@@ -372,7 +372,7 @@ public partial class Project : BindableRecipient, IManifest
                             dlh.BypassLoad = false;
                             return dlh;
                         }));
-                        p.Status = p.Inspections.Count + " Inspections • 118MB of 214MB •";
+                        p.Status = p.State == DownloadInspection.States.Complete ? $"{p.Inspections.Count} Inspections {GetTotalSize(p.TotalSize)}" : $"{p.Inspections.Count} Inspections {GetDownloadedPercentage(p.Progress)} of {GetTotalSize(p.TotalSize)}";
                     }
                 }
                 catch (InvalidCastException)
@@ -385,6 +385,52 @@ public partial class Project : BindableRecipient, IManifest
         }
 
         return p;
+    }
+
+    public static string GetDownloadedPercentage(object? value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (!decimal.TryParse(value.ToString(), out var d))
+        {
+            return null;
+        }
+
+        return $"{d * 100m:0.0}%";
+    }
+
+    private static string GetTotalSize(object? value)
+    {
+        if (value == null)
+        {
+            return null;
+        }
+
+        if (!long.TryParse(value.ToString(), out var bytes))
+        {
+            return null;
+        }
+
+        if (bytes < Math.Pow(2, 20))
+        {
+            // 1024 * 1024
+            // Return as kilo bytes
+            return (bytes / Math.Pow(2, 10)).ToString("0.0 KB");
+        }
+        else if (bytes <= Math.Pow(2, 30) * 10)
+        {
+            // 1024 * 1024 * 1024
+            // Return in MB
+            return (bytes / Math.Pow(2, 20)).ToString("0.0 MB");
+        }
+        else
+        {
+            // Return in GB
+            return (bytes / Math.Pow(2, 30)).ToString("0.0 GB");
+        }
     }
 
     /// <summary>
