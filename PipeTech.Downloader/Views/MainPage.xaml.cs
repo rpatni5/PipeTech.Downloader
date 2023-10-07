@@ -18,7 +18,7 @@ public sealed partial class MainPage : Page
     /// </summary>
     public MainPage()
     {
-        this.ViewModel = App.GetService<MainViewModel>();
+        this.DataContext = this.ViewModel = App.GetService<MainViewModel>();
         this.InitializeComponent();
     }
 

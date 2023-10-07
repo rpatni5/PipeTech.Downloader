@@ -3,6 +3,7 @@
 // </copyright>
 
 using CommunityToolkit.Mvvm.Messaging;
+using ControlzEx.Theming;
 using Microsoft.UI.Xaml;
 
 using PipeTech.Downloader.Contracts.Services;
@@ -17,6 +18,7 @@ namespace PipeTech.Downloader.Services;
 public class ThemeSelectorService : IThemeSelectorService
 {
     private const string SettingsKey = ILocalSettingsService.AppBackgroundRequestedThemeKey;
+    private const string DialogKey = ILocalSettingsService.AppConfirmDownloadDialogKey;
 
     private readonly ILocalSettingsService localSettingsService;
     private readonly IMessenger? messenger;
@@ -35,12 +37,14 @@ public class ThemeSelectorService : IThemeSelectorService
     }
 
     /// <inheritdoc/>
-    public ElementTheme Theme { get; set; } = ElementTheme.Default;
+    public ElementTheme Theme { get; set; } = ElementTheme.Default; 
+    public bool SaveDialogNeeded { get; set; } = false; 
 
     /// <inheritdoc/>
     public async Task InitializeAsync()
     {
         this.Theme = await this.LoadThemeFromSettingsAsync();
+        this.SaveDialogNeeded = await this.GetDownloadConfirmFromSettingAsync();
         await Task.CompletedTask;
     }
 
@@ -52,6 +56,23 @@ public class ThemeSelectorService : IThemeSelectorService
         await this.SetRequestedThemeAsync();
         await this.SaveThemeInSettingsAsync(this.Theme);
     }
+
+
+    /// <inheritdoc/>
+    public async Task<bool> GetDownloadConfirmFromSettingAsync()
+    {
+        var setting = await this.localSettingsService.ReadSettingAsync<bool>(DialogKey);
+
+        return setting;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveDownloadConfirmSettingAsync(bool askBeforeSave)
+    {
+        await this.localSettingsService.SaveSettingAsync(DialogKey, askBeforeSave);
+    }
+
+    
 
     /// <inheritdoc/>
     public async Task SetRequestedThemeAsync()

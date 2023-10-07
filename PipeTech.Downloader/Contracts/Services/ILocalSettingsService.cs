@@ -13,6 +13,7 @@ public interface ILocalSettingsService
     /// Key for the app background theme.
     /// </summary>
     internal const string AppBackgroundRequestedThemeKey = "AppBackgroundRequestedTheme";
+    internal const string AppConfirmDownloadDialogKey = "AppConfirmDownloadDialog";
 
     /// <summary>
     /// Key for the default data folder.

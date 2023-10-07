@@ -20,6 +20,14 @@ public interface IThemeSelectorService
     }
 
     /// <summary>
+    /// Gets the theme.
+    /// </summary>
+    bool SaveDialogNeeded
+    {
+        get;
+    }
+
+    /// <summary>
     /// Initialize the theme.
     /// </summary>
     /// <returns>Asynchronous task.</returns>
@@ -37,4 +45,12 @@ public interface IThemeSelectorService
     /// </summary>
     /// <returns>Asynchronous task.</returns>
     Task SetRequestedThemeAsync();
+
+    /// <summary>
+    /// Saves the dialog ask value
+    /// </summary>
+    /// <returns></returns>
+    Task SaveDownloadConfirmSettingAsync(bool askBeforeSave);
+
+    Task<bool> GetDownloadConfirmFromSettingAsync();
 }

@@ -40,7 +40,7 @@
                             <FontIcon Glyph="&#xE897;" FontSize="20" FontWeight="Medium" />
                             <TextBlock Text="Ask me where to save before each download" Margin="20,0,0,0" Width="300" VerticalAlignment="Center" />
                             <StackPanel Width="380">
-                                <ToggleSwitch IsOn="True" HorizontalAlignment="Right" />
+                                <ToggleSwitch IsOn="{Binding DialogPathForDownload, Mode=TwoWay}" HorizontalAlignment="Right" />
                             </StackPanel>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Padding="16,12,12,12" HorizontalAlignment="Stretch" >

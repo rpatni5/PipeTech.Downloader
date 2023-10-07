@@ -45,6 +45,12 @@ public partial class MainViewModel : BindableRecipient, INavigationAware, IDispo
     private string? dataFolder;
 
     [ObservableProperty]
+    private string? selectedFolder;
+
+    [ObservableProperty]
+    private bool saveDownloadPathRequired;
+
+    [ObservableProperty]
     private bool useDefault = false;
 
     [ObservableProperty]
@@ -118,13 +124,24 @@ public partial class MainViewModel : BindableRecipient, INavigationAware, IDispo
         this.DownloadCommand = new AsyncRelayCommand(this.ExecuteDownload, this.CanExecuteDownload);
         this.BrowseFolderCommand = new RelayCommand(this.ExecuteBrowseDataFolder);
         this.ShowDetailsCommand = new AsyncRelayCommand(this.ExecuteShowDetails);
+        this.BrowserForDownloadPathCommand = new AsyncRelayCommand(this.BrowserForDownloadPath);
+
+        this.SaveBrowserForDownloadPathCommand = new AsyncRelayCommand(
+            this.SaveBrowserForDownloadPath,
+            () => !(string.IsNullOrEmpty(this.SelectedFolder) && string.IsNullOrWhiteSpace(this.SelectedFolder)));
+        this.CancelBrowserForDownloadPathCommand = new AsyncRelayCommand(
+            this.CancelBrowserForDownloadPath,
+            () => !(string.IsNullOrEmpty(this.SelectedFolder) && string.IsNullOrWhiteSpace(this.SelectedFolder)));
+
         this.ShowInspectionDetailsCommand = new AsyncRelayCommand<object?>(this.ExecuteShowInspectionDetails);
 
         _ = Task.Run(async () =>
         {
-            this.DataFolder = await this.localSettingsService.ReadSettingAsync<string?>(ILocalSettingsService.LastDataFolderKey);
+            this.SelectedFolder = this.DataFolder = await this.localSettingsService.ReadSettingAsync<string?>(ILocalSettingsService.LastDataFolderKey);
+            this.SaveDownloadPathRequired = await this.localSettingsService.ReadSettingAsync<bool>(ILocalSettingsService.AppConfirmDownloadDialogKey);
         });
     }
+
 
     /// <summary>
     /// Manifest loading states.
@@ -161,6 +178,24 @@ public partial class MainViewModel : BindableRecipient, INavigationAware, IDispo
     /// Gets the show details command.
     /// </summary>
     public IAsyncRelayCommand ShowDetailsCommand
+    {
+        get;
+    }
+
+    /// <summary>
+    /// Gets the show details command.
+    /// </summary>
+    public IAsyncRelayCommand BrowserForDownloadPathCommand
+    {
+        get;
+    }
+
+    public IAsyncRelayCommand SaveBrowserForDownloadPathCommand
+    {
+        get;
+    }
+
+    public IAsyncRelayCommand CancelBrowserForDownloadPathCommand
     {
         get;
     }
@@ -840,6 +875,33 @@ public partial class MainViewModel : BindableRecipient, INavigationAware, IDispo
         }
     }
 
+    private async Task BrowserForDownloadPath()
+    {
+        var d = new CommonOpenFileDialog()
+        {
+            IsFolderPicker = true,
+            Title = "Select Download Folder",
+        };
+
+        if (d.ShowDialog() == CommonFileDialogResult.Ok)
+        {
+            this.SelectedFolder = d.FileName;
+        }
+        await Task.CompletedTask;
+    }
+
+    private async Task SaveBrowserForDownloadPath()
+    {
+        this.DataFolder = this.SelectedFolder;
+        this.SaveDownloadPathRequired = false;
+        await Task.CompletedTask;
+    }
+
+    private async Task CancelBrowserForDownloadPath()
+    {
+        this.SaveDownloadPathRequired = false;
+        await Task.CompletedTask;
+    }
     private void ExecuteBrowseDataFolder()
     {
         var d = new CommonOpenFileDialog()

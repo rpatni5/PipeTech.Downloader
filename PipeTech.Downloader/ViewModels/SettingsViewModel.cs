@@ -56,6 +56,32 @@ public partial class SettingsViewModel : BindableRecipient
         }
     }
 
+    private bool dialogPathForDownload;
+
+    public bool DialogPathForDownload
+    {
+        get
+        {
+            return dialogPathForDownload;
+        }
+        set
+        {
+            dialogPathForDownload = value;
+            UpdateDialogPathSetting(value);
+            this.RaisePropertyChanged();
+        }
+    }
+
+    private async void UpdateDialogPathSetting(bool value)
+    {
+        await this.themeSelectorService.SaveDownloadConfirmSettingAsync(value);
+    }
+
+    private async void GetUpdateDialogPathSetting()
+    {
+        this.DialogPathForDownload = await this.themeSelectorService.GetDownloadConfirmFromSettingAsync();
+    }
+
     private async void UpdateTheme(ElementTheme param)
     {
         if (this.ElementTheme != param)
@@ -88,7 +114,7 @@ public partial class SettingsViewModel : BindableRecipient
         this.Themes = new ObservableCollection<string> { "Light", "Dark", "Default" };
         this.ElementTheme = this.themeSelectorService.Theme;
         this.selectedTheme = this.ElementTheme.ToString();
-
+        this.GetUpdateDialogPathSetting();
         this.EmailCommand = new AsyncRelayCommand(() =>
         {
             _ = Launcher.LaunchUriAsync(new Uri("mailto:support.pipetech.com"));

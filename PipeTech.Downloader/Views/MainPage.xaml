@@ -247,5 +247,75 @@
                     Content="Download"/>
         </Grid>
 
+        <Grid Grid.RowSpan="2"  
+              Background="White" 
+              Opacity="0.3" 
+              Visibility="{Binding SaveDownloadPathRequired, Converter={StaticResource BoolToVisibilityConverter}}">
+
+        </Grid>
+
+        <Popup Grid.RowSpan="2" 
+            x:Name="downloadDialog" Width="500" Height="400"
+            IsOpen="{Binding SaveDownloadPathRequired, Mode=TwoWay}">
+
+            <Grid Width="500" Height="400" Background="Transparent" 
+                  HorizontalAlignment="Center">
+                <Grid.Resources>
+                    <ThemeShadow x:Name="SharedShadow" />
+                </Grid.Resources>
+
+
+                <StackPanel Margin="0,12,0,0" HorizontalAlignment="Center">
+                    <Border CornerRadius="10" BorderThickness="2" Background="#FFf5f5f0" BorderBrush="LightGray">
+
+                        <StackPanel>
+                            <StackPanel Background="White" Padding="50" >
+                                <TextBlock Margin="0,20" FontWeight="Medium" FontSize="20" Text="Where to download inspections?"/>
+
+                                <TextBlock TextWrapping="WrapWholeWords">
+                                <Run>Select the download folder:</Run>
+                                </TextBlock>
+                                <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                    <TextBox Text="{Binding SelectedFolder,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" 
+                                             x:Name="projectSavedURL" 
+                                             Width="320" />
+                                    <Button Margin="8,0,0,0" 
+                                            Command="{Binding BrowserForDownloadPathCommand}">
+                                        Browse
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Margin="0,30">
+
+                                <Button Content="Save" 
+                                        Width="200"
+                                        HorizontalAlignment="Left" 
+                                        VerticalAlignment="Top" 
+                                        Foreground="White"
+                                        Command="{Binding SaveBrowserForDownloadPathCommand}"
+                                        Background="#FF005FB8"
+                                        Margin="20,0" />
+
+                                <Button Content="Cancel" 
+                                        Width="200"
+                                        Command="{Binding CancelBrowserForDownloadPathCommand}"
+                                        HorizontalAlignment="Left" 
+                                        VerticalAlignment="Top"  
+                                        Margin="20,0" />
+
+
+                            </StackPanel>
+
+
+
+                        </StackPanel>
+
+                    </Border>
+
+                </StackPanel>
+            </Grid>
+        </Popup>
+
     </Grid>
 </Page>
