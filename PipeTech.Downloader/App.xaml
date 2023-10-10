@@ -2,6 +2,7 @@
     x:Class="PipeTech.Downloader.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"    
     xmlns:converters="using:CommunityToolkit.WinUI.UI.Converters"
+    xmlns:helper="using:PipeTech.Downloader.Helpers"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Application.Resources>
         <ResourceDictionary>
@@ -15,7 +16,9 @@
             <converters:BoolToObjectConverter x:Key="BoolToVisibilityConverter" TrueValue="Visible" FalseValue="Collapsed"/>
             <converters:BoolToObjectConverter x:Key="NotBoolToVisibilityConverter" TrueValue="Collapsed" FalseValue="Visible"/>
             <converters:BoolToObjectConverter x:Key="InvertedBoolConverter" TrueValue="false" FalseValue="true"/>
-
+            <helper:EnumToVisibilityConverter x:Key="EnumToVisibilityConverter" />
+            <helper:InvertEnumToVisibilityConverter x:Key="InvertEnumToVisibilityConverter" />
+            <helper:ErrorCountConverter x:Key="ErrorCountConverter" /> 
 
             <Style TargetType="ContentDialog">
                 <Setter Property="Foreground" Value="{ThemeResource ContentDialogForeground}" />

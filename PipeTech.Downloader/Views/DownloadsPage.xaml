@@ -18,7 +18,7 @@
         <helpers:NumberToPercentageStringConverter x:Key="NumberToPercentageStringConverter" />
         <helpers:NumberBytesToStorageStringConverter x:Key="NumberBytesToStorageStringConverter" />
         <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
-        <helpers:StatusTextMultivalueConverter x:Key="StatusTextMultivalueConverter" /> 
+        <helpers:StatusTextMultivalueConverter x:Key="StatusTextMultivalueConverter" />
 
         <helpers:BindingProxy x:Key="Proxy" Data="{x:Bind ViewModel, Mode=OneWay}"/>
 
@@ -562,6 +562,20 @@
                                                         VerticalContentAlignment="Top"
                                                         HorizontalAlignment="Right" />
 
+                                            <Button     Content="x" 
+                                                        Height="24"
+                                                        Width="24"
+                                                        Grid.Column="1"
+                                                        FontSize="20" 
+                                                        Margin="0,-6,0,0"
+                                                        Padding="0,-6,0,0"
+                                                        VerticalAlignment="Top"
+                                                        Command="{Binding Data.RemoveProjectCommand, Source={StaticResource Proxy} }"
+                                                        Visibility="{Binding State, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Errored, Mode=OneWay}"
+                                                        CommandParameter="{x:Bind}"
+                                                        VerticalContentAlignment="Top"
+                                                        HorizontalAlignment="Right" />
+
                                         </Grid>
 
                                         <ContentPresenter >
@@ -587,7 +601,7 @@
 
                                                                     </Button>
                                                                 </StackPanel>
-                                                                
+
                                                                 <Grid x:Name="progressBar" Margin="0,14">
                                                                     <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
                                                                     <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
@@ -630,20 +644,56 @@
                                                     </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
                                                     <behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
                                                         <DataTemplate x:DataType="models:Project">
-                                                            <StackPanel>
-                                                                <TextBlock Text="Couldn't load" FontSize="12" Margin="0,4,4,0" Foreground="#FFC42B1C" Style="{StaticResource DownloadStatusText}" />
+                                                            <StackPanel Margin="0,8">
+                                                                <StackPanel Orientation="Horizontal">
+
+                                                                    <TextBlock Text="{Binding ErrorCount, Converter={StaticResource ErrorCountConverter}, Mode=OneWay}" 
+                                                                               FontSize="12" 
+                                                                               Margin="0,4,4,0" 
+                                                                               Foreground="#FFC42B1C" 
+                                                                               Style="{StaticResource DownloadStatusText}" />
+
+                                                                    <TextBlock Text="{Binding Status}" Margin="0,4,4,0" FontSize="12" Style="{StaticResource DownloadStatusText}" />
+                                                                    <Button      
+                                                                            Content="Details" 
+                                                                            Background="Transparent"
+                                                                            BorderThickness="0"                                    
+                                                                            FontSize="12" 
+                                                                            Foreground="#003E92"
+                                                                            VerticalContentAlignment="Top"
+                                                                            CommandParameter="{Binding }"
+                                                                            Command="{Binding Data.GoToDetailsViewCommand, Source={StaticResource Proxy} }" />
+                                                                </StackPanel>
 
                                                                 <Grid x:Name="errorProgressBar" Margin="0,14">
                                                                     <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
                                                                     <ProgressBar Foreground="#FFC42B1C" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
                                                                 </Grid>
                                                                 <Grid Margin="0">
-                                                                    <Button Content="Retry" 
-                                                                        HorizontalAlignment="Left" 
-                                                                        VerticalAlignment="Top" 
-                                                                        Background="#B3FFFFFF"
-                                                                        Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
-                                                                        CommandParameter="{x:Bind}" />
+                                                                    <StackPanel Orientation="Horizontal">
+
+                                                                        <Button Content="Retry" 
+                                                                                HorizontalAlignment="Left" 
+                                                                                VerticalAlignment="Top" 
+                                                                                Background="#003E92"
+                                                                                FontSize="12" 
+                                                                                Foreground="White"
+                                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
+                                                                                CommandParameter="{x:Bind}" />
+
+                                                                        <Button Content="View Errors" 
+                                                                                Margin="10,0"
+                                                                             Command="{Binding Source={StaticResource Proxy}, Path=Data.ShowDetailsCommand}"
+                                                                             CommandParameter="{x:Bind Inspections}">
+                                                                        </Button>
+
+                                                                        <Button Content="Open Folder" HorizontalAlignment="Left" 
+                                                                                VerticalAlignment="Top"  
+                                                                                Command="{Binding Data.OpenFolderCommand, Source={StaticResource Proxy} }"
+                                                                                CommandParameter="{x:Bind}" />
+
+                                                                    </StackPanel>
+
                                                                 </Grid>
                                                             </StackPanel>
                                                         </DataTemplate>

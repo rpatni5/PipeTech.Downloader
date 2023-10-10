@@ -29,6 +29,10 @@ public partial class Project : BindableRecipient, IManifest
     private string status;
 
     [ObservableProperty]
+    [JsonIgnore]
+    private int errorCount;
+
+    [ObservableProperty]
     private DateTime? confirmationTime;
 
     [ObservableProperty]
@@ -373,6 +377,7 @@ public partial class Project : BindableRecipient, IManifest
                             return dlh;
                         }));
                         p.Status = p.State == DownloadInspection.States.Complete ? $"{p.Inspections.Count} Inspections {GetTotalSize(p.TotalSize)}" : $"{p.Inspections.Count} Inspections {GetDownloadedPercentage(p.Progress)} of {GetTotalSize(p.TotalSize)}";
+                        p.ErrorCount = p.Inspections.Count(x => x.Inspection.State == DownloadInspection.States.Errored);
                     }
                 }
                 catch (InvalidCastException)

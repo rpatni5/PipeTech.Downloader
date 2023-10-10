@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Hangfire;
 using Microsoft.Extensions.Logging;
+using Microsoft.UI.Xaml.Controls;
 using PipeTech.Downloader.Contracts.Services;
 using PipeTech.Downloader.Contracts.ViewModels;
 using PipeTech.Downloader.Models;
@@ -22,6 +23,8 @@ public partial class DownloadDetailViewModel : BindableRecipient, INavigationAwa
     private readonly ILogger<DownloadDetailViewModel>? logger;
     private readonly IDownloadService downloadService;
     private readonly IBackgroundJobClientV2 jobClient;
+    private ContentDialog? dialog = null;
+
     public DownloadDetailViewModel(INavigationService navigationService,
          IDownloadService downloadService,
         IBackgroundJobClientV2 jobClient,
@@ -152,4 +155,34 @@ public partial class DownloadDetailViewModel : BindableRecipient, INavigationAwa
         // Create a job
         await this.downloadService.CreateJobForProject(p);
     }
+
+    [RelayCommand]
+    private async Task ShowDetails(object? param)
+    {
+        if (param is not DownloadInspection dl ||
+            string.IsNullOrEmpty(dl.LastError))
+        {
+            await Task.CompletedTask;
+            return;
+        }
+
+        try
+        {
+            this.dialog?.Hide();
+
+            this.dialog = new ContentDialog()
+            {
+                XamlRoot = App.MainWindow.Content.XamlRoot,
+                Title = string.Empty,
+                Content = dl.LastError,
+                CloseButtonText = "Close",
+            };
+
+            await this.dialog.ShowAsync();
+        }
+        catch (Exception)
+        {
+        }
+    }
+
 }
