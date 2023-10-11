@@ -130,13 +130,13 @@
                                 Background="#FF005FB8" 
                                 Foreground="White" />
 
-                        <Button Content="View Errors" 
+                        <!--<Button Content="View Errors" 
                                 HorizontalAlignment="Left" 
                                 VerticalAlignment="Top" 
                                 Margin="10,0"
                                 Command="{Binding ResumeProjectCommand}"
                                 CommandParameter="{Binding Project}"
-                                Background="White" />
+                                Background="White" />-->
 
                         <Button Content="Open Folder" 
                                 HorizontalAlignment="Left" 
