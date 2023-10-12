@@ -69,15 +69,22 @@
                     <Grid x:Name="progressBar" Margin="0,14">
                         <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
                         <ProgressBar x:Name="currentProjectProgress" 
-                                     IsIndeterminate="{Binding Project.WasCompleted,Converter={StaticResource InvertedBoolConverter}}" 
+                                     IsIndeterminate="False" 
                                      HorizontalAlignment="Stretch" 
+                                     Foreground="#003E92"
+                                     Minimum="0" 
+                                     Maximum="1" 
+                                     Value="{Binding Project.Progress, Mode=OneWay}"
                                      Height="2" 
                                      VerticalAlignment="Top"/>
 
-                        <ProgressBar IsIndeterminate="{Binding Project.WasCompleted,Converter={StaticResource InvertedBoolConverter}}" 
+                        <ProgressBar IsIndeterminate="False" 
                                      Visibility="{Binding Project.State, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Errored, Mode=OneWay}"
                                      HorizontalAlignment="Stretch" 
                                      Foreground="#FFC42B1C"
+                                     Minimum="0" 
+                                     Maximum="1" 
+                                     Value="{Binding Project.Progress, Mode=OneWay}"
                                      Height="2" 
                                      VerticalAlignment="Top"/>
 

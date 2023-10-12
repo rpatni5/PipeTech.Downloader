@@ -604,13 +604,17 @@
 
                                                                 <Grid x:Name="progressBar" Margin="0,14">
                                                                     <ProgressBar HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
-                                                                    <ProgressBar IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
+                                                                    <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress, Mode=OneWay}" 
+                                                                                 IsIndeterminate = "False"  
+                                                                                 Foreground="#003E92"
+                                                                                 HorizontalAlignment="Stretch" 
+                                                                                 Height="2" 
+                                                                                 VerticalAlignment="Top"/>
                                                                 </Grid>
                                                                 <Button x:Name="pauseButton"  
                                                                             Content="Pause" 
                                                                             HorizontalAlignment="Left" 
                                                                             VerticalAlignment="Top" 
-                                                                            Height="30" 
                                                                             Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
                                                                             CommandParameter="{x:Bind}"
                                                                             Background="#FF005FB8" 

@@ -68,20 +68,20 @@ public partial class Project : BindableRecipient, IManifest
     /// Gets the progress.
     /// </summary>
     [JsonIgnore]
-    public decimal Progress
+    public double Progress
     {
         get
         {
             if (this.WasCompleted == true)
             {
-                return 1m;
+                return 1;
             }
 
-            decimal count = this.Inspections?
+            double count = this.Inspections?
                 .Where(h => h.Inspection?.State == DownloadInspection.States.Complete &&
                  !string.IsNullOrEmpty(h.Inspection?.DataCompletePath) &&
                 System.IO.File.Exists(h.Inspection.DataCompletePath)).Count() ?? 0;
-            decimal total = this.Inspections?.Count ?? 0;
+            double total = this.Inspections?.Count ?? 0;
 
             if (this.CombinedNASSCOExchangeGenerate == true &&
             this.GetExchangeDBPath() is string dbPath &&
@@ -124,8 +124,13 @@ public partial class Project : BindableRecipient, IManifest
                     .Count() ?? 0;
                 total += this.Inspections?.Count() ?? 0;
             }
-
-            return count / (total == 0 ? 1 : total);
+            var refreshedProgress = count / (total == 0 ? 1 : total);
+            if (refreshedProgress > 0)
+            {
+                Status = State == DownloadInspection.States.Complete ? $"{Inspections.Count} Inspections {GetTotalSize(TotalSize)}" : $"{Inspections.Count} Inspections {GetDownloadedPercentage(refreshedProgress)} of {GetTotalSize(TotalSize)}";
+                ErrorCount = Inspections.Count(x => x.Inspection.State == DownloadInspection.States.Errored);
+            }
+            return refreshedProgress;
         }
     }
 
@@ -174,6 +179,7 @@ public partial class Project : BindableRecipient, IManifest
         {
             if (this.WasCompleted == true)
             {
+                Status = $"{Inspections.Count} Inspections {GetTotalSize(TotalSize)}";
                 return DownloadInspection.States.Complete;
             }
 
