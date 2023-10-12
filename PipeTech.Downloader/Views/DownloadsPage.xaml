@@ -524,7 +524,7 @@
             <TreeView.ItemTemplate>
                 <DataTemplate x:DataType="models:ProjectGroup">
                     <StackPanel Orientation="Vertical">
-                        <TextBlock Margin="0,5" Text="{Binding GroupTitle}" FontSize="14" FontWeight="Medium" />
+                        <TextBlock Margin="0,15" Text="{Binding GroupTitle}" FontSize="14" FontWeight="Medium" />
                         <TreeView  ItemsSource="{Binding Projects, Mode=OneWay}" >
                             <TreeView.ItemTemplate>
                                 <DataTemplate x:DataType="models:Project">
@@ -644,8 +644,8 @@
                                                     </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>
                                                     <behaviors:ContentPresenterTemplateBehavior.ErroredTemplate>
                                                         <DataTemplate x:DataType="models:Project">
-                                                            <StackPanel Margin="0,8">
-                                                                <StackPanel Orientation="Horizontal">
+                                                            <StackPanel>
+                                                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
 
                                                                     <TextBlock Text="{Binding ErrorCount, Converter={StaticResource ErrorCountConverter}, Mode=OneWay}" 
                                                                                FontSize="12" 

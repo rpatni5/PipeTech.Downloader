@@ -30,9 +30,9 @@
             </tb:TaskbarIcon.TrayToolTip>
         </tb:TaskbarIcon>
 
-        <Grid Grid.Row="0" x:Name="AppTitleBar">
+        <Grid Grid.Row="0" x:Name="AppTitleBar" Background="#FFF1F1F1">
             <Image Source="/Assets/WindowIcon.ico" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0"/>
-            <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="32, 0, 0, 0"/>
+            <TextBlock x:Name="AppTitleBarText" Text="PipeTech Downloader" VerticalAlignment="Center" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="32, 0, 0, 0"/>
         </Grid>
 
         <Grid x:Name="childScreen" Grid.Row="1" 
@@ -105,13 +105,14 @@
         </Grid>
 
 
-
-        <Grid Grid.Row="2" Margin="{StaticResource MenuBarContentMargin}" >
-            <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" 
+        <Border Grid.Row="2"  Background="#FFf9f9f9">
+            <Grid Margin="{StaticResource MenuBarContentMargin}" >
+                <!--<ScrollViewer HorizontalScrollBarVisibility="Auto" 
                           VerticalScrollBarVisibility="Auto"
                           Padding="0,0,12,0">-->
-            <Frame x:Name="NavigationFrame"  />
-            <!--</ScrollViewer>-->
-        </Grid>
+                <Frame x:Name="NavigationFrame"  />
+                <!--</ScrollViewer>-->
+            </Grid>
+        </Border>
     </Grid>
 </Page>
