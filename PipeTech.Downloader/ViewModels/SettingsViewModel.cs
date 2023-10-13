@@ -38,6 +38,9 @@ public partial class SettingsViewModel : BindableRecipient
     private string? dataFolder;
 
     [ObservableProperty]
+    private bool isExpanded = true;
+
+    [ObservableProperty]
     private ObservableCollection<string> themes;
 
     private string selectedTheme;
@@ -239,5 +242,11 @@ public partial class SettingsViewModel : BindableRecipient
         }
 
         return $"{"AppDisplayName".GetLocalized()} - {version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
+    }
+
+    [RelayCommand]
+    public void ExpandCollapse()
+    {
+        this.IsExpanded = !this.IsExpanded;
     }
 }

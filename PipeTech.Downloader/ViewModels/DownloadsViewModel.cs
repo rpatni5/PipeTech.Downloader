@@ -15,6 +15,7 @@ using Humanizer;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using NPOI.SS.Formula.Functions;
 using PipeTech.Downloader.Contracts.Services;
 using PipeTech.Downloader.Contracts.ViewModels;
 using PipeTech.Downloader.Models;
@@ -207,6 +208,18 @@ public partial class DownloadsViewModel : BindableRecipient, INavigationAware
         this.navigationService.NavigateTo(typeof(DownloadDetailViewModel).FullName!, param, clearNavigation: false);
         await Task.CompletedTask;
         return;
+    }
+
+    [RelayCommand]
+    private async Task CancelDownload()
+    {
+        throw new NotImplementedException();
+    }
+
+    [RelayCommand]
+    private async Task ClearAll()
+    {
+        throw new NotImplementedException();
     }
 
     private async Task ExecuteShowDetails(object? param)

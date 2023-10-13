@@ -185,4 +185,10 @@ public partial class DownloadDetailViewModel : BindableRecipient, INavigationAwa
         }
     }
 
+    [RelayCommand]
+    private async Task CancelDownload()
+    {
+        throw new NotImplementedException();
+    }
+
 }

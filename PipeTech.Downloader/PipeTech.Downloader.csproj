@@ -33,6 +33,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Content Remove="Assets\chevrondown.png" />
+		<Content Remove="Assets\chevronup.png" />
+		<Content Remove="Assets\DrawerArrowDownload.png" />
+		<Content Remove="Assets\emptydownloads.png" />
+		<Content Remove="Assets\emptydownloads@2x.png" />
 		<Content Remove="Assets\file.png" />
 		<Content Remove="Assets\folder.png" />
 		<Content Remove="Assets\LightLogo.svg" />
@@ -128,6 +133,18 @@
 		<ProjectReference Include="..\PipeTech.Downloader.Core\PipeTech.Downloader.Core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<None Update="Assets\chevrondown.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\chevronup.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\emptydownloads%402x.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\emptydownloads.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Assets\file.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

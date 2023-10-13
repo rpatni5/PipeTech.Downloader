@@ -19,6 +19,7 @@
         <helpers:NumberBytesToStorageStringConverter x:Key="NumberBytesToStorageStringConverter" />
         <helpers:EnumToStringConverter x:Key="EnumToStringConverter" />
         <helpers:StatusTextMultivalueConverter x:Key="StatusTextMultivalueConverter" />
+        <helpers:CollectionToVisibilityConverter x:Key="CollectionToVisibilityConverter" />
 
         <helpers:BindingProxy x:Key="Proxy" Data="{x:Bind ViewModel, Mode=OneWay}"/>
 
@@ -143,10 +144,35 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0"
-            x:Uid="Downloads_Title"
-            Style="{StaticResource PageTitleStyle}" />
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock
+                    Grid.Column="0"
+                    x:Uid="Downloads_Title"
+                    Style="{StaticResource PageTitleStyle}" />
+
+            <Button     Grid.Column="1"
+                        Width="100"
+                        Height="24"
+                        Margin="0,0,3,0"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Padding="0"
+                        Command="{Binding ClearAllCommand}">
+                <!-- Set padding if needed -->
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="×" FontSize="20" Margin="0,-6,0,0"/>
+                    <!-- Multiplication sign -->
+                    <TextBlock Text=" Clear All" Margin="0,-2,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Button>
+
+        </Grid>
+
         <!--<ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto">-->
         <controls:DataGrid x:Name="grid" Grid.Row="1"
                                IsReadOnly="True"
@@ -516,11 +542,27 @@
             </controls:DataGrid.Columns>
         </controls:DataGrid>
         <!--</ScrollViewer>-->
+
+        <Grid  Grid.Row="1"
+               Margin="0,10"
+               Visibility="{Binding SourceView, Converter={StaticResource CollectionToVisibilityConverter}, ConverterParameter=Invert}"
+               Padding="0">
+
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" >
+                <Grid >
+                    <Image Source="/Assets/emptydownloads.png" Stretch="None"  />
+                </Grid>
+                <TextBlock Text="Your downloads will appear here." FontSize="16px" Foreground="#FF626262" HorizontalAlignment="Center" Margin="0,15" />
+            </StackPanel>
+
+        </Grid>
+
         <TreeView  x:Name="itemListView"
                    Grid.Row="1"
                    Margin="0,10"
                    Padding="0"
-          ItemsSource="{Binding SourceView, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                   Visibility="{Binding SourceView, Converter={StaticResource CollectionToVisibilityConverter}}"                   
+                   ItemsSource="{Binding SourceView, Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
             <TreeView.ItemTemplate>
                 <DataTemplate x:DataType="models:ProjectGroup">
                     <StackPanel Orientation="Vertical">
@@ -611,14 +653,23 @@
                                                                                  Height="2" 
                                                                                  VerticalAlignment="Top"/>
                                                                 </Grid>
-                                                                <Button x:Name="pauseButton"  
-                                                                            Content="Pause" 
-                                                                            HorizontalAlignment="Left" 
-                                                                            VerticalAlignment="Top" 
-                                                                            Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
-                                                                            CommandParameter="{x:Bind}"
-                                                                            Background="#FF005FB8" 
-                                                                            Foreground="White" />
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Button x:Name="pauseButton"  
+                                                                                Content="Pause" 
+                                                                                HorizontalAlignment="Left" 
+                                                                                VerticalAlignment="Top" 
+                                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.PauseProjectDownloadCommand}"
+                                                                                CommandParameter="{x:Bind}"
+                                                                                Background="#FF005FB8" 
+                                                                                Foreground="White" />
+
+                                                                    <Button Content="Cancel" 
+                                                                                HorizontalAlignment="Left" 
+                                                                                VerticalAlignment="Top" 
+                                                                                Margin="10,0"
+                                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.CancelDownloadCommand}"
+                                                                                CommandParameter="{x:Bind}"  />
+                                                                </StackPanel>
 
                                                             </StackPanel>
                                                         </DataTemplate>
@@ -633,7 +684,7 @@
                                                                     <ProgressBar Foreground="#FFC42B1C" IsIndeterminate="True" HorizontalAlignment="Stretch" Height="2" VerticalAlignment="Top"/>
                                                                 </Grid>
 
-                                                                <Grid Margin="0,0,0,0">
+                                                                <StackPanel Orientation="Horizontal">
                                                                     <Button Content="Resume" 
                                                                         HorizontalAlignment="Left" 
                                                                         VerticalAlignment="Top" 
@@ -642,7 +693,13 @@
                                                                         Command="{Binding Source={StaticResource Proxy}, Path=Data.RestartProjectDownloadCommand}"
                                                                         CommandParameter="{x:Bind}"
                                                                         />
-                                                                </Grid>
+                                                                    <Button Content="Cancel" 
+                                                                                HorizontalAlignment="Left" 
+                                                                                VerticalAlignment="Top" 
+                                                                                Margin="10,0"
+                                                                                Command="{Binding Source={StaticResource Proxy}, Path=Data.CancelDownloadCommand}"
+                                                                                CommandParameter="{x:Bind}"  />
+                                                                </StackPanel>
                                                             </StackPanel>
                                                         </DataTemplate>
                                                     </behaviors:ContentPresenterTemplateBehavior.RestartTemplate>

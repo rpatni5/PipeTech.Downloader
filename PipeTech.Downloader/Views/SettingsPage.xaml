@@ -123,22 +123,74 @@
                 </StackPanel>
 
                 <StackPanel Padding="0,0,0,48">
+
                     <TextBlock Text="About" FontSize="14" FontWeight="Medium" Margin="0,0,0,16" />
-                    <StackPanel 
-                    Height="64" 
-                    CornerRadius="3"
-                        Background="{StaticResource BGColor}"
-                    BorderBrush="#EAEAEA" 
-                    BorderThickness="1">
-                        <StackPanel Orientation="Horizontal" Padding="16,12,12,11" BorderBrush="#EAEAEA">
-                            <Image Source="./80_80.png" Width="24" Height="24" />
-                            <StackPanel Width="300" Margin="20,0,0,0" VerticalAlignment="Center" >
+
+                    <StackPanel CornerRadius="3"
+                                Background="{StaticResource BGColor}"
+                                BorderBrush="#EAEAEA" 
+                                BorderThickness="1">
+
+                        <Grid Padding="16,12,12,11" BorderBrush="#EAEAEA">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Image Source="/Assets/Square150x150Logo.scale-200.png" Width="30" Height="30" />
+                            <StackPanel Grid.Column="1" Width="300" Margin="20,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left">
                                 <TextBlock Text="PipeTech Downloader" />
                                 <TextBlock Text="© 2023 Industrial Tech Group. All rights reserved." FontSize="12" />
                             </StackPanel>
-                            <StackPanel HorizontalAlignment="Stretch" Width="300">
-                            </StackPanel>
+                            <TextBlock Grid.Column="2" Text="1.0.0.7" FontSize="12" Margin="20,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <Button     Grid.Column="3"
+                                        Margin="0,0,3,0"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Padding="0"
+                                        Background="Transparent"
+                                        BorderBrush="Transparent"
+                                        Command="{Binding ExpandCollapseCommand}">
+                                <Grid>
+                                    <Image Source="/Assets/chevronup.png"
+                                           Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                                    <Image Source="/Assets/chevrondown.png"  
+                                           Visibility="{Binding IsExpanded, Converter={StaticResource NotBoolToVisibilityConverter}}"/>
+                                </Grid>
+                            </Button>
+
+                        </Grid>
+
+                        <StackPanel Padding="16,12,12,12" Margin="-1"  
+                                    HorizontalAlignment="Stretch"
+                                    Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    BorderBrush="#EAEAEA" 
+                                    BorderThickness="1">
+                            <TextBlock HorizontalAlignment="Left"
+                                       Foreground="#FF626262"
+                                       FontSize="13"
+                                       Margin="40,0,0,0"
+                                       VerticalAlignment="Center"
+                                       Text="Download your projects and inspections to your machine for offline viewing in PipeTech desktop products." />
                         </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" 
+                                    Padding="16,12,12,12" 
+                                    HorizontalAlignment="Stretch" 
+                                    Margin="-1" 
+                                    Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    BorderBrush="#EAEAEA" 
+                                    BorderThickness="1">
+                            <HyperlinkButton x:Uid="SettingsPage_PrivacyTermsLink"
+                                             Foreground="#003E92" 
+                                             HorizontalAlignment="Left" 
+                                            Margin="28,0,0,0"
+                                             VerticalAlignment="Center"/>
+
+                        </StackPanel>
+
                     </StackPanel>
                 </StackPanel>
 

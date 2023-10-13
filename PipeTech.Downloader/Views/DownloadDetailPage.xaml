@@ -109,12 +109,15 @@
                                 Visibility="{Binding Project.State, Converter={StaticResource EnumToVisibilityConverter}, ConverterParameter=Paused, Mode=OneWay}"
                                 Background="#FF005FB8" 
                                 Foreground="White" />
-                        <!--<Button Content="Cancel" 
+                        
+                        <Button Content="Cancel" 
                                 HorizontalAlignment="Left" 
                                 VerticalAlignment="Top" 
                                 Height="30" 
+                                Command="{Binding CancelDownloadCommand}"
                                 Visibility="{Binding Project.WasCompleted, Converter={StaticResource NotBoolToVisibilityConverter}}"
-                                Margin="8,0,0,0"/>-->
+                                Margin="8,0,0,0"/>
+                        
                         <Button x:Name="thirdButton"  
                                 Content="Open Folder" 
                                 HorizontalAlignment="Left" 
